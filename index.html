@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI採寸ツール：コピペ対応版</title>
+    <title>AI採寸ツール：上下別判定モデル</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -14,24 +14,30 @@
         .input-group { flex: 1; }
         label { display: block; font-size: 0.75rem; font-weight: bold; color: #64748b; margin-bottom: 5px; }
         input { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; }
         video { display: none; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .result-item { background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; font-size: 0.9rem; }
-        .rec-size-card { grid-column: 1 / 3; background: #2563eb; color: white; padding: 10px; border-radius: 8px; text-align: center; }
+
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .result-item { background: #f8fafc; padding: 8px; border-radius: 8px; text-align: center; font-size: 0.85rem; border: 1px solid #e2e8f0; }
+        .val { font-weight: bold; color: #1e293b; }
+
+        .size-display { grid-column: 1 / 3; display: flex; gap: 8px; margin-top: 5px; }
+        .size-box { flex: 1; background: #2563eb; color: white; padding: 12px; border-radius: 8px; text-align: center; }
+        .size-box.pants { background: #475569; }
+        .size-label { font-size: 0.7rem; opacity: 0.9; margin-bottom: 4px; }
+        .size-val { font-size: 1.4rem; font-weight: bold; }
+
         .action-btn { width: 100%; padding: 18px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        
-        /* 追記：コピペ用エリア */
-        #copyArea { margin-top: 15px; display: none; }
-        textarea { width: 100%; height: 120px; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; background: #eff6ff; font-size: 0.9rem; box-sizing: border-box; }
-        .copy-info { font-size: 0.8rem; color: #2563eb; margin-bottom: 5px; font-weight: bold; }
+        #copyArea { margin-top: 15px; display: none; width: 100%; }
+        textarea { width: 100%; height: 140px; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; background: #eff6ff; font-size: 0.85rem; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1 style="font-size:1.2rem; text-align:center;">AI自動採寸システム</h1>
+    <h1 style="font-size:1.2rem; text-align:center; margin-bottom:15px;">AI作業着採寸（上下セット版）</h1>
     
     <div class="input-row">
         <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="170"></div>
@@ -44,21 +50,29 @@
     </div>
 
     <div class="result-grid">
-        <div class="result-item">肩幅: <span id="shW">--</span>cm</div>
-        <div class="result-item">身幅: <span id="chW">--</span>cm</div>
-        <div class="result-item">袖丈: <span id="slL">--</span>cm</div>
-        <div class="result-item">股下: <span id="inL">--</span>cm</div>
-        <div class="rec-size-card">推奨サイズ: <span id="finalSize" style="font-size:1.5rem; font-weight:bold;">判定中</span></div>
+        <div class="result-item">肩幅: <span class="val" id="shW">--</span>cm</div>
+        <div class="result-item">袖丈: <span class="val" id="slL">--</span>cm</div>
+        <div class="result-item">ウエスト(推): <span class="val" id="waist">--</span>cm</div>
+        <div class="result-item">股下: <span class="val" id="inL">--</span>cm</div>
+        
+        <div class="size-display">
+            <div class="size-box">
+                <div class="size-label">上着サイズ</div>
+                <div class="size-val" id="topSize">--</div>
+            </div>
+            <div class="size-box pants">
+                <div class="size-label">ズボンサイズ</div>
+                <div class="size-val" id="pantsSize">--</div>
+            </div>
+        </div>
     </div>
 
-    <button id="mainBtn" class="action-btn" onclick="startSelfTimer()">採寸スタート</button>
+    <button id="mainBtn" class="action-btn" onclick="startSelfTimer()">採寸スタート (10秒後に確定)</button>
 
-    <!-- 追記：コピペ用エリア（完了後に表示） -->
     <div id="copyArea">
-        <p class="copy-info">▼以下の内容がコピーされました</p>
+        <p style="font-size:0.8rem; color:#2563eb; font-weight:bold; margin-bottom:5px;">▼以下の内容をコピーしました</p>
         <textarea id="resultText" readonly></textarea>
-        <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">※コピーできていない場合は、上記を全選択してコピーしてください。</p>
-        <button class="action-btn" style="background:#3b82f6;" onclick="goToForms()">フォームを開く</button>
+        <button class="action-btn" style="background:#3b82f6;" onclick="goToForms()">Microsoft Formsを開く</button>
     </div>
 </div>
 
@@ -70,43 +84,55 @@
     const copyArea = document.getElementById('copyArea');
     const resultTextArea = document.getElementById('resultText');
     
-    let measurements = { shoulder: 0, chest: 0, sleeve: 0, inseam: 0, size: "" };
+    let measurements = { shoulder: 0, sleeve: 0, waist: 0, inseam: 0, topSize: "", pantsSize: "" };
     let isCounting = false;
 
     function onResults(results) {
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
         if (results.poseLandmarks) {
             drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 2});
             const lm = results.poseLandmarks;
             const h = parseFloat(document.getElementById('heightInput').value);
-            const bodyPx = Math.abs(lm[27].y - lm[0].y);
+            const bodyPx = Math.abs(lm[27].y - lm[0].y); // 鼻から足首
             const ratio = h / (bodyPx * 1.18); 
+
             if (bodyPx > 0) {
                 measurements.shoulder = Math.sqrt(Math.pow(lm[11].x-lm[12].x, 2)+Math.pow(lm[11].y-lm[12].y, 2)) * canvasElement.width * ratio;
-                measurements.chest = Math.abs(lm[23].x - lm[24].x) * canvasElement.width * ratio * 1.25;
                 measurements.sleeve = Math.sqrt(Math.pow(lm[11].x-lm[15].x, 2)+Math.pow(lm[11].y-lm[15].y, 2)) * canvasElement.width * ratio;
+                measurements.waist = Math.abs(lm[23].x - lm[24].x) * canvasElement.width * ratio * 2.4; // 正面幅×2.4(一周＋厚み)
                 measurements.inseam = Math.abs(lm[23].y - lm[27].y) * canvasElement.height * ratio;
+
                 document.getElementById('shW').innerText = measurements.shoulder.toFixed(1);
-                document.getElementById('chW').innerText = measurements.chest.toFixed(1);
                 document.getElementById('slL').innerText = measurements.sleeve.toFixed(1);
+                document.getElementById('waist').innerText = measurements.waist.toFixed(0);
                 document.getElementById('inL').innerText = measurements.inseam.toFixed(1);
-                decideSize(measurements.shoulder, measurements.chest);
+
+                calculateSizes(measurements.shoulder, measurements.waist);
             }
         }
         canvasCtx.restore();
     }
 
-    function decideSize(s, c) {
-        let sld = "M";
-        if (s > 52 || c > 54) sld = "3L";
-        else if (s > 48 || c > 50) sld = "LL";
-        else if (s > 44 || c > 46) sld = "L";
-        else if (s > 40 || c > 42) sld = "M";
-        else sld = "S";
-        measurements.size = sld;
-        document.getElementById('finalSize').innerText = sld;
+    function calculateSizes(sh, ws) {
+        // 上着判定 (肩幅基準)
+        if (sh > 52) measurements.topSize = "3L";
+        else if (sh > 48) measurements.topSize = "LL";
+        else if (sh > 44) measurements.topSize = "L";
+        else if (sh > 40) measurements.topSize = "M";
+        else measurements.topSize = "S";
+
+        // ズボン判定 (ウエスト基準)
+        if (ws > 95) measurements.pantsSize = "3L(95-100)";
+        else if (ws > 88) measurements.pantsSize = "LL(88-91)";
+        else if (ws > 82) measurements.pantsSize = "L(82-85)";
+        else if (ws > 76) measurements.pantsSize = "M(76-79)";
+        else measurements.pantsSize = "S(70-73)";
+
+        document.getElementById('topSize').innerText = measurements.topSize;
+        document.getElementById('pantsSize').innerText = measurements.pantsSize;
     }
 
     function startSelfTimer() {
@@ -130,21 +156,20 @@
 
     function finishMeasurement() {
         const footSize = document.getElementById('footInput').value;
-        const res = `【採寸結果】\nサイズ: ${measurements.size}\n肩幅: ${measurements.shoulder.toFixed(1)}cm\n身幅: ${measurements.chest.toFixed(1)}cm\n袖丈: ${measurements.sleeve.toFixed(1)}cm\n股下: ${measurements.inseam.toFixed(1)}cm\n足のサイズ: ${footSize}cm`;
+        const res = `【採寸報告】\n■推奨サイズ\n上着: ${measurements.topSize}\nズボン: ${measurements.pantsSize}\n靴: ${footSize}cm\n\n■詳細データ\n肩幅: ${measurements.shoulder.toFixed(1)}cm\nウエスト(推): ${measurements.waist.toFixed(0)}cm\n袖丈: ${measurements.sleeve.toFixed(1)}cm\n股下: ${measurements.inseam.toFixed(1)}cm`;
         
         resultTextArea.value = res;
         copyArea.style.display = "block";
-        
         navigator.clipboard.writeText(res).then(() => {
-            alert("計測完了！内容をコピーしました。");
+            const finalUttr = new SpeechSynthesisUtterance("計測完了。コピーしました。");
+            window.speechSynthesis.speak(finalUttr);
+            alert("計測完了！結果をコピーしました。");
         });
-
         isCounting = false;
         mainBtn.innerText = "再計測する";
     }
 
     function goToForms() {
-        // Microsoft FormsのURLに差し替えてください
         window.location.href = "https://forms.office.com/r/XXXXXX";
     }
 
