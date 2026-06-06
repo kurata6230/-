@@ -3,67 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI採寸＆備品DXポータル</title>
+    <title>宝塚舞台 全部署対応 採寸ポータル</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; border-radius: 16px; padding: 20px; max-width: 550px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
+        .card { background: white; border-radius: 16px; padding: 20px; max-width: 600px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 1.1rem; color: #1e293b; margin: 0 0 15px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
-        
-        /* 入力エリア（最優先表示） */
-        .input-row { display: flex; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .input-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { flex: 1; }
         label { display: block; font-size: 0.7rem; font-weight: bold; color: #64748b; margin-bottom: 4px; }
-        input { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-
-        /* カメラエリア */
+        input, select { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 15px; }
         video { display: none; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
-
-        /* 4大部位表示 */
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .result-item { background: #f1f5f9; padding: 8px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; }
         .res-label { font-size: 0.65rem; color: #64748b; display: block; }
         .res-val { font-size: 1rem; font-weight: bold; color: #2563eb; }
-
-        /* カタログセクション */
         #catalog-section { display: none; border-top: 2px dashed #cbd5e1; padding-top: 15px; width: 100%; }
-        .search-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3b82f6; margin-bottom: 10px; box-sizing: border-box; font-size: 0.9rem; }
-        .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
-        .tab { white-space: nowrap; padding: 8px 16px; background: #e2e8f0; border-radius: 20px; font-size: 0.8rem; cursor: pointer; border: none; font-weight: bold; color: #475569; }
-        .tab.active { background: #3b82f6; color: white; }
-
-        .item-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 12px; background: #fff; }
-        .item-card.hidden { display: none; }
-        .item-name { font-weight: bold; font-size: 0.95rem; color: #1e293b; margin-bottom: 10px; }
-        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; margin-right: 4px; margin-bottom: 4px; }
+        .item-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: #fff; }
+        .item-name { font-weight: bold; font-size: 0.95rem; color: #1e293b; margin-bottom: 10px; border-left: 4px solid #3b82f6; padding-left: 8px; }
+        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 8px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin-right: 4px; margin-bottom: 4px; }
         .opt-btn.selected { background: #3b82f6; color: white; border-color: #3b82f6; }
         .ai-rec { border: 2px solid #10b981 !important; position: relative; }
-        .ai-rec::after { content: "推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 4px; }
-
+        .ai-rec::after { content: "AI推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 4px; }
         .action-btn { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-measure { background: #10b981; color: white; }
         .btn-order { background: #3b82f6; color: white; }
-        textarea { width: 100%; height: 250px; padding: 12px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 0.8rem; background: #f8fafc; box-sizing: border-box; }
+        textarea { width: 100%; height: 300px; padding: 12px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 0.8rem; background: #f8fafc; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>AI採寸＆備品DX統合ポータル</h1>
+    <h1>宝塚舞台：2026年度 採寸ポータル(全部署対応)</h1>
     
-    <!-- 入力エリア（復活） -->
     <div class="input-row">
-        <div class="input-group">
-            <label>身長(cm)</label>
-            <input type="number" id="heightInput" value="170">
+        <div style="display:flex; gap:10px;">
+            <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="宝塚 太郎"></div>
+            <div class="input-group"><label>性別</label>
+                <select id="genderInput">
+                    <option value="女">女</option>
+                    <option value="男">男</option>
+                </select>
+            </div>
         </div>
-        <div class="input-group">
-            <label>靴サイズ(cm)</label>
-            <input type="number" id="footInput" value="26.5" step="0.5">
+        <div class="input-group"><label>配属部署</label>
+            <select id="deptInput" onchange="toggleDeptItems()">
+                <option value="大道具">大道具係</option>
+                <option value="小道具">小道具係</option>
+                <option value="進行">進行係</option>
+                <option value="衣裳">衣裳係</option>
+                <option value="照明">照明係</option>
+                <option value="音響">音響係</option>
+                <option value="電飾">電飾係</option>
+                <option value="制作">制作</option>
+                <option value="事業部">事業部</option>
+                <option value="背景">背景</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="160"></div>
+            <div class="input-group"><label>靴サイズ(cm)</label><input type="number" id="shoeInput" value="23.5" step="0.5"></div>
         </div>
     </div>
 
@@ -72,54 +75,86 @@
         <canvas id="output_canvas"></canvas>
     </div>
 
-    <!-- 4大部位表示 -->
     <div class="result-grid">
         <div class="result-item"><span class="res-label">肩幅</span><span class="res-val" id="shW">--</span></div>
-        <div class="result-item"><span class="res-label">ウエスト</span><span class="res-val" id="waist">--</span></div>
+        <div class="result-item"><span class="res-label">ウエスト(推)</span><span class="res-val" id="waist">--</span></div>
         <div class="result-item"><span class="res-label">袖丈</span><span class="res-val" id="slL">--</span></div>
-        <div class="result-item"><span class="res-label">股下</span><span class="res-val" id="inL">--</span></div>
+        <div class="result-item"><span class="res-label">股下(実測)</span><span class="res-val" id="inL">--</span></div>
     </div>
 
     <button id="mainBtn" class="action-btn btn-measure" onclick="startSelfTimer()">採寸スタート (10秒)</button>
 
-    <!-- カタログ・検索セクション -->
     <div id="catalog-section">
-        <div style="background:#eff6ff; padding:10px; border-radius:8px; margin-bottom:15px; font-weight:bold; font-size:0.85rem; display:flex; justify-content:space-between; border:1px solid #3b82f6;">
-            <span>保有: 300 pt</span>
-            <span id="used-pts" style="color:#2563eb;">利用合計: 0 pt</span>
+        <!-- 共通：上着 -->
+        <div class="item-card">
+            <div class="item-name">黒上着 / 長袖シャツ / ベスト (S-7L)</div>
+            <div class="select-area">
+                <button class="opt-btn" id="rec-u-S" onclick="sel(this,'上着','S')">S</button>
+                <button class="opt-btn" id="rec-u-M" onclick="sel(this,'上着','M')">M</button>
+                <button class="opt-btn" id="rec-u-L" onclick="sel(this,'上着','L')">L</button>
+                <button class="opt-btn" id="rec-u-2L" onclick="sel(this,'上着','2L')">2L</button>
+                <button class="opt-btn" id="rec-u-3L" onclick="sel(this,'上着','3L')">3L</button>
+                <button class="opt-btn" id="rec-u-4L" onclick="sel(this,'上着','4L')">4L</button>
+                <button class="opt-btn" id="rec-u-5L" onclick="sel(this,'上着','5L')">5L</button>
+            </div>
         </div>
 
-        <input type="text" class="search-box" id="searchInput" placeholder="数百種類のアイテムから検索..." oninput="filterItems()">
-        
-        <div class="tab-bar">
-            <button class="tab active" onclick="setTab(this, 'すべて')">すべて</button>
-            <button class="tab" onclick="setTab(this, '被服')">被服</button>
-            <button class="tab" onclick="setTab(this, '劇団・舞台')">劇団・舞台</button>
-            <button class="tab" onclick="setTab(this, '安全・保護具')">安全・保護具</button>
+        <!-- 共通：黒ズボン（標準） -->
+        <div class="item-card" id="standard-pants-card">
+            <div class="item-name">黒ズボン (W70-W120)</div>
+            <div class="select-area">
+                <button class="opt-btn" id="rec-p-W70" onclick="sel(this,'ズボン','W70')">W70</button>
+                <button class="opt-btn" id="rec-p-W73" onclick="sel(this,'ズボン','W73')">W73</button>
+                <button class="opt-btn" id="rec-p-W76" onclick="sel(this,'ズボン','W76')">W76</button>
+                <button class="opt-btn" id="rec-p-W79" onclick="sel(this,'ズボン','W79')">W79</button>
+                <button class="opt-btn" id="rec-p-W82" onclick="sel(this,'ズボン','W82')">W82</button>
+                <button class="opt-btn" id="rec-p-W85" onclick="sel(this,'ズボン','W85')">W85</button>
+                <button class="opt-btn" id="rec-p-W88" onclick="sel(this,'ズボン','W88')">W88</button>
+            </div>
         </div>
 
-        <div id="itemList">
-            <!-- サンプルアイテム -->
-            <div class="item-card" data-cat="被服" data-name="速乾Tシャツ">
-                <div class="item-name">👕 速乾ドライTシャツ (20pt)</div>
-                <div class="select-area">
-                    <button class="opt-btn" id="rec-t-M" onclick="sel(this,'Tシャツ','M',20)">M</button>
-                    <button class="opt-btn" id="rec-t-L" onclick="sel(this,'Tシャツ','L',20)">L</button>
-                    <button class="opt-btn" id="rec-t-LL" onclick="sel(this,'Tシャツ','LL',20)">LL</button>
-                </div>
+        <!-- 衣裳係専用：総ゴムパンツ -->
+        <div class="item-card" id="isho-pants-card" style="display:none; background:#fffcf0;">
+            <div class="item-name">【衣裳係用】黒 総ゴムパンツ (3S-5L)</div>
+            <div class="select-area">
+                <button class="opt-btn" id="rec-g-3S" onclick="sel(this,'ゴムパンツ','3S')">3S</button>
+                <button class="opt-btn" id="rec-g-SS" onclick="sel(this,'ゴムパンツ','SS')">SS</button>
+                <button class="opt-btn" id="rec-g-S" onclick="sel(this,'ゴムパンツ','S')">S</button>
+                <button class="opt-btn" id="rec-g-M" onclick="sel(this,'ゴムパンツ','M')">M</button>
+                <button class="opt-btn" id="rec-g-L" onclick="sel(this,'ゴムパンツ','L')">L</button>
+                <button class="opt-btn" id="rec-g-LL" onclick="sel(this,'ゴムパンツ','LL')">LL</button>
             </div>
+        </div>
 
-            <div class="item-card" data-cat="劇団・舞台" data-name="稽古着">
-                <div class="item-name">🥋 稽古用和装インナー (30pt)</div>
-                <div class="select-area">
-                    <button class="opt-btn" id="rec-k-M" onclick="sel(this,'稽古着','M',30)">M</button>
-                    <button class="opt-btn" id="rec-k-L" onclick="sel(this,'稽古着','L',30)">L</button>
-                </div>
+        <!-- 女性用スリムズボン -->
+        <div class="item-card" id="slim-pants-card">
+            <div class="item-name">【女性】黒 スリムズボン (7-11号)</div>
+            <div class="select-area">
+                <button class="opt-btn" onclick="sel(this,'スリムズボン','7号(W61)')">7号</button>
+                <button class="opt-btn" onclick="sel(this,'スリムズボン','9号(W64)')">9号</button>
+                <button class="opt-btn" onclick="sel(this,'スリムズボン','11号(W67)')">11号</button>
             </div>
+        </div>
 
-            <div class="item-card" data-cat="安全・保護具" data-name="安全靴">
-                <div class="item-name">👞 作業用安全靴 (40pt)</div>
-                <div class="select-area"><button class="opt-btn" onclick="sel(this,'安全靴','26.0',40)">26.0</button><button class="opt-btn" onclick="sel(this,'安全靴','27.0',40)">27.0</button></div>
+        <!-- 共通：Tシャツ -->
+        <div class="item-card">
+            <div class="item-name">黒半袖Tシャツ (140-XXXL)</div>
+            <div class="select-area">
+                <button class="opt-btn" id="rec-t-S" onclick="sel(this,'Tシャツ','S')">S</button>
+                <button class="opt-btn" id="rec-t-M" onclick="sel(this,'Tシャツ','M')">M</button>
+                <button class="opt-btn" id="rec-t-L" onclick="sel(this,'Tシャツ','L')">L</button>
+                <button class="opt-btn" id="rec-t-XL" onclick="sel(this,'Tシャツ','XL')">XL</button>
+            </div>
+        </div>
+
+        <!-- 安全靴・ヘルメット -->
+        <div class="item-card" id="safety-card">
+            <div class="item-name">安全靴 / 釘抜き防止中敷き / ヘルメット</div>
+            <div class="select-area">
+                <button class="opt-btn" onclick="sel(this,'安全靴','希望する')">安全靴</button>
+                <button class="opt-btn" onclick="sel(this,'中敷き','希望する')">中敷き</button>
+                <button class="opt-btn" onclick="sel(this,'ヘルメット','一般')">ヘルメット(一般)</button>
+                <button class="opt-btn" onclick="sel(this,'ヘルメット','電気')">ヘルメット(電気)</button>
             </div>
         </div>
 
@@ -135,10 +170,31 @@
     const videoElement = document.getElementById('input_video');
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
+    const mainBtn = document.getElementById('mainBtn');
     
-    let measurements = { shoulder:0, waist:0, sleeve:0, inseam:0, topSize:"M" };
-    let selections = {}; 
-    let currentTab = "すべて";
+    let measurements = { shoulder:0, waist:0, sleeve:0, inseam:0 };
+    let selections = {};
+
+    function toggleDeptItems() {
+        const dept = document.getElementById('deptInput').value;
+        const ishoCard = document.getElementById('isho-pants-card');
+        const stdCard = document.getElementById('standard-pants-card');
+        const safetyCard = document.getElementById('safety-card');
+        
+        if (dept === "衣裳") {
+            ishoCard.style.display = "block";
+            stdCard.style.display = "none";
+            safetyCard.style.display = "none";
+        } else if (dept === "制作" || dept === "事業部") {
+            ishoCard.style.display = "none";
+            stdCard.style.display = "block";
+            safetyCard.style.display = "none";
+        } else {
+            ishoCard.style.display = "none";
+            stdCard.style.display = "block";
+            safetyCard.style.display = "block";
+        }
+    }
 
     function onResults(results) {
         canvasCtx.save();
@@ -155,70 +211,68 @@
                 measurements.waist = Math.abs(lm[23].x - lm[24].x) * canvasElement.width * ratio * 2.4;
                 measurements.sleeve = Math.sqrt(Math.pow(lm[11].x-lm[15].x, 2)+Math.pow(lm[11].y-lm[15].y, 2)) * canvasElement.width * ratio;
                 measurements.inseam = Math.abs(lm[23].y - lm[27].y) * canvasElement.height * ratio;
-
                 document.getElementById('shW').innerText = measurements.shoulder.toFixed(1);
                 document.getElementById('waist').innerText = measurements.waist.toFixed(0);
                 document.getElementById('slL').innerText = measurements.sleeve.toFixed(1);
                 document.getElementById('inL').innerText = measurements.inseam.toFixed(1);
-
-                measurements.topSize = (measurements.shoulder > 44) ? "L" : "M";
             }
         }
         canvasCtx.restore();
     }
 
-    function setTab(btn, tabName) {
-        currentTab = tabName;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        filterItems();
-    }
-
-    function filterItems() {
-        const searchText = document.getElementById('searchInput').value.toLowerCase();
-        document.querySelectorAll('.item-card').forEach(card => {
-            const cat = card.getAttribute('data-cat');
-            const name = card.getAttribute('data-name').toLowerCase();
-            const matchTab = (currentTab === "すべて" || cat === currentTab);
-            const matchSearch = name.includes(searchText);
-            card.classList.toggle('hidden', !(matchTab && matchSearch));
-        });
-    }
-
     function startSelfTimer() {
         let count = 10;
-        document.getElementById('mainBtn').disabled = true;
+        mainBtn.disabled = true;
         const timer = setInterval(() => {
-            document.getElementById('mainBtn').innerText = `あと ${count} 秒...`;
-            if (count <= 3 && count > 0) speechSynthesis.speak(new SpeechSynthesisUtterance(count));
+            mainBtn.innerText = `あと ${count} 秒...`;
+            if (count <= 3 && count > 0) {
+                const uttr = new SpeechSynthesisUtterance(count.toString());
+                window.speechSynthesis.speak(uttr);
+            }
             if (count <= 0) {
                 clearInterval(timer);
-                document.getElementById('mainBtn').style.display = "none";
+                mainBtn.style.display = "none";
                 document.getElementById('catalog-section').style.display = "block";
-                const rec = measurements.topSize;
-                ["rec-t-","rec-k-"].forEach(id => {
-                    const el = document.getElementById(id + rec);
-                    if(el) el.classList.add('ai-rec');
-                });
-                speechSynthesis.speak(new SpeechSynthesisUtterance("計測完了。アイテムを選んでください"));
+                recommendSizes();
             }
             count--;
         }, 1000);
     }
 
-    function sel(btn, item, val, pt) {
+    function recommendSizes() {
+        const sh = measurements.shoulder;
+        const ws = measurements.waist;
+
+        const topRec = (sh > 47) ? "2L" : (sh > 44) ? "L" : (sh > 41) ? "M" : "S";
+        const topBtn = document.getElementById("rec-u-" + topRec);
+        if(topBtn) topBtn.classList.add('ai-rec');
+
+        const pantsRec = (ws > 85) ? "W88" : (ws > 79) ? "W82" : (ws > 73) ? "W76" : "W73";
+        const pantsBtn = document.getElementById("rec-p-" + pantsRec);
+        if(pantsBtn) pantsBtn.classList.add('ai-rec');
+
+        const gomuRec = (ws > 82) ? "LL" : (ws > 76) ? "L" : (ws > 70) ? "M" : "S";
+        const gomuBtn = document.getElementById("rec-g-" + gomuRec);
+        if(gomuBtn) gomuBtn.classList.add('ai-rec');
+
+        const tRec = (sh > 45) ? "L" : "M";
+        document.getElementById("rec-t-" + tRec).classList.add('ai-rec');
+    }
+
+    function sel(btn, item, val) {
         const parent = btn.parentElement;
         parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        selections[item] = {val: val, pts: pt};
-        let total = 0;
-        for (let k in selections) total += selections[k].pts;
-        document.getElementById('used-pts').innerText = `利用合計: ${total} pt`;
+        selections[item] = val;
     }
 
     function finishOrder() {
-        let res = `【統合申請ポータル】\nAIサイズ判定: ${measurements.topSize}\n靴サイズ: ${document.getElementById('footInput').value}cm\n\n選択内容:\n`;
-        for (let k in selections) res += `・${k}: ${selections[k].val} (${selections[k].pts}pt)\n`;
+        const name = document.getElementById('nameInput').value || "未入力";
+        const dept = document.getElementById('deptInput').value;
+        const shoe = document.getElementById('shoeInput').value;
+        const gender = document.getElementById('genderInput').value;
+        let res = `【宝塚舞台：2026年度 採寸報告】\n氏名: ${name}\n性別: ${gender}\n部署: ${dept}\n靴サイズ: ${shoe}cm\n\n■AI測定詳細\n肩幅:${measurements.shoulder.toFixed(1)} / 腰幅:${measurements.waist.toFixed(0)} / 股下:${measurements.inseam.toFixed(1)}\n\n■選択サイズ\n`;
+        for (let k in selections) res += `・${k}: ${selections[k]}\n`;
         document.getElementById('resultText').value = res;
         document.getElementById('catalog-section').style.display = "none";
         document.getElementById('copyArea').style.display = "block";
@@ -230,6 +284,7 @@
     pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
     pose.onResults(onResults);
     new Camera(videoElement, { onFrame: async () => { await pose.send({image: videoElement}); }, width: 640, height: 480 }).start();
+    toggleDeptItems();
 </script>
 </body>
 </html>
