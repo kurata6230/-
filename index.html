@@ -11,7 +11,8 @@
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 550px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
-        
+        .security-note { font-size: 0.55rem; color: #059669; background: #f0fdf4; padding: 6px; border-radius: 6px; margin-bottom: 8px; text-align: center; }
+
         /* 入力エリア */
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
@@ -24,10 +25,9 @@
         canvas { width: 100%; height: 100%; object-fit: cover; }
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 15px; border-radius: 20px; font-size: 0.65rem; z-index: 100; cursor: pointer; }
         
-        /* ステータス（即時表示用） */
         .status-msg { position: absolute; bottom: 10px; width: 100%; text-align: center; color: #0f0; font-size: 0.7rem; font-weight: bold; text-shadow: 1px 1px 2px #000; }
 
-        /* 測定数値表示（即座に反映） */
+        /* 測定数値表示（cm表示・小数点1位） */
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
         .result-item { background: #f1f5f9; padding: 6px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; }
         .res-label { font-size: 0.5rem; color: #64748b; display: block; }
@@ -38,20 +38,21 @@
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fff; }
         .item-name { font-weight: bold; font-size: 0.85rem; color: #1e293b; margin-bottom: 8px; border-left: 4px solid #3b82f6; padding-left: 8px; }
         .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 7px; border-radius: 5px; font-size: 0.7rem; cursor: pointer; margin-right: 3px; margin-bottom: 3px; min-width: 40px; }
-        .opt-btn.selected { background: #3b82f6; color: white; }
+        .opt-btn.selected { background: #3b82f6; color: white; border-color: #3b82f6; }
         .ai-rec { border: 2px solid #10b981 !important; position: relative; }
         .ai-rec::after { content: "推奨"; position: absolute; top: -11px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 3px; border-radius: 3px; z-index: 10; }
 
         .action-btn { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 5px; }
         .btn-measure { background: #10b981; color: white; }
         .btn-order { background: #3b82f6; color: white; }
-        textarea { width: 100%; height: 280px; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 0.75rem; background: #f8fafc; margin-top: 15px; line-height: 1.4; box-sizing: border-box; }
+        textarea { width: 100%; height: 300px; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 0.75rem; background: #f8fafc; margin-top: 15px; line-height: 1.4; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1>宝塚舞台：採寸＆備品DXポータル</h1>
+    <div class="security-note">【安心宣言】画像はスマホ内のみで処理され、送信・保存はされません。</div>
     
     <div class="input-row">
         <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
@@ -70,7 +71,7 @@
             </select>
         </div>
         <div class="input-group"><label>利き手</label>
-            <select id="handInput"><option value="右">右</option><option value="左">左</option></select>
+            <select id="handInput"><option value="右">右利き</option><option value="左">左利き</option></select>
         </div>
         <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="160"></div>
         <div class="input-group"><label>靴(cm)</label><input type="number" id="shoeInput" value="23.5" step="0.5"></div>
@@ -80,7 +81,7 @@
         <button class="flip-btn" onclick="toggleCamera()">📷 カメラ切替</button>
         <video id="input_video" playsinline muted autoplay></video>
         <canvas id="output_canvas"></canvas>
-        <div id="statusBox" class="status-msg">AI解析中...</div>
+        <div id="statusBox" class="status-msg">AIシステム起動中...</div>
     </div>
 
     <div class="result-grid">
@@ -93,9 +94,9 @@
     <button id="mainBtn" class="action-btn btn-measure" onclick="startSelfTimer()">採寸スタート (10秒)</button>
 
     <div id="catalog-section">
-        <!-- 被服・備品エリア -->
+        <!-- カタログアイテム -->
         <div class="item-card">
-            <div class="item-name">黒上着 / シャツ系 / 防寒着 (S-7L)</div>
+            <div class="item-name">黒上着 / 長袖黒シャツ / ベスト / 防寒着</div>
             <div class="select-area">
                 <button class="opt-btn" id="rec-u-S" onclick="sel(this,'上着系','S')">S</button>
                 <button class="opt-btn" id="rec-u-M" onclick="sel(this,'上着系','M')">M</button>
@@ -117,7 +118,7 @@
         </div>
 
         <div class="item-card" id="card-slim" style="display:none; background:#fffcf0;">
-            <div class="item-name">女性用 スリムズボン</div>
+            <div class="item-name">女性用 スリムズボン (7号-11号)</div>
             <div class="select-area">
                 <button class="opt-btn" id="rec-s-7" onclick="sel(this,'スリムズボン','7号')">7号</button>
                 <button class="opt-btn" id="rec-s-9" onclick="sel(this,'スリムズボン','9号')">9号</button>
@@ -126,7 +127,7 @@
         </div>
 
         <div class="item-card" id="card-isho" style="display:none; background:#f0f9ff;">
-            <div class="item-name">衣裳係専用：黒総ゴムパンツ</div>
+            <div class="item-name">衣裳係専用：黒総ゴムパンツ (3S-5L)</div>
             <div class="select-area">
                 <button class="opt-btn" id="rec-g-S" onclick="sel(this,'総ゴム','S')">S</button>
                 <button class="opt-btn" id="rec-g-M" onclick="sel(this,'総ゴム','M')">M</button>
@@ -135,11 +136,13 @@
         </div>
 
         <div class="item-card">
-            <div class="item-name">その他備品</div>
+            <div class="item-name">黒半袖Tシャツ / 靴下 / 備品</div>
             <div class="select-area">
-                <button class="opt-btn" onclick="sel(this,'ヘルメット','一般')">ヘルメット</button>
-                <button class="opt-btn" onclick="sel(this,'中敷き','釘抜き防止')">釘抜き敷</button>
-                <button class="opt-btn" onclick="sel(this,'靴下','黒5足組')">黒靴下</button>
+                <button class="opt-btn" id="rec-t-M" onclick="sel(this,'Tシャツ','M')">Tシャツ(M)</button>
+                <button class="opt-btn" id="rec-t-L" onclick="sel(this,'Tシャツ','L')">Tシャツ(L)</button>
+                <button class="opt-btn" onclick="sel(this,'備品','ヘルメット')">ヘルメット</button>
+                <button class="opt-btn" onclick="sel(this,'備品','釘抜き防止敷')">釘抜き敷</button>
+                <button class="opt-btn" onclick="sel(this,'備品','黒靴下5足組')">黒靴下</button>
             </div>
         </div>
 
@@ -169,29 +172,24 @@
             drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 2});
             const lm = results.poseLandmarks;
             const h = parseFloat(document.getElementById('heightInput').value);
-            
-            // 鼻(0)と腰(23,24)の位置を取得
             const nose = lm[0];
             const hipY = (lm[23].y + lm[24].y) / 2;
-            const ankle = (lm[27].visibility > 0.3) ? lm[27] : null;
+            const ankleY = (lm[27].y + lm[28].y) / 2;
 
-            // 【即時計算ロジック】足が見えていれば足首で、見えていなければ腰からの比率で全身を予測
-            let bodyRatio = ankle ? Math.abs(ankle.y - nose.y) : Math.abs(hipY - nose.y) * 2.1;
-            
+            // 即時計測：足が見えていなくても腰からの比率で計算開始
+            const bodyRatio = (lm[27].visibility > 0.3) ? Math.abs(ankleY - nose.y) : Math.abs(hipY - nose.y) * 2.1;
+
             if (bodyRatio > 0.1) {
-                statusBox.innerText = results.poseLandmarks ? "● 検知中" : "カメラに全身を映してください";
+                statusBox.innerText = "● 解析中：離れて足元まで映すと正確になります";
+                statusBox.style.color = "#0f0";
+
                 const factor = h / (bodyRatio * 1.15); 
 
-                // 数値を計算し、画面に即座に反映
-                const shDist = Math.sqrt(Math.pow(lm[11].x-lm[12].x, 2)+Math.pow(lm[11].y-lm[12].y, 2));
-                const wsDist = Math.abs(lm[23].x - lm[24].x) * 2.4;
-                const slDist = Math.sqrt(Math.pow(lm[11].x-lm[15].x, 2)+Math.pow(lm[11].y-lm[15].y, 2));
-                const inDist = Math.abs(lm[23].y - (ankle ? ankle.y : hipY * 1.8));
-
-                measurements.shoulder = (shDist * factor).toFixed(1);
-                measurements.waist = (wsDist * factor).toFixed(1);
-                measurements.sleeve = (slDist * factor).toFixed(1);
-                measurements.inseam = (inDist * factor).toFixed(1);
+                // 数値計算と画面反映
+                measurements.shoulder = (Math.sqrt(Math.pow(lm[11].x-lm[12].x, 2)+Math.pow(lm[11].y-lm[12].y, 2)) * factor).toFixed(1);
+                measurements.waist = (Math.abs(lm[23].x - lm[24].x) * factor * 2.4).toFixed(1);
+                measurements.sleeve = (Math.sqrt(Math.pow(lm[11].x-lm[15].x, 2)+Math.pow(lm[11].y-lm[15].y, 2)) * factor).toFixed(1);
+                measurements.inseam = (Math.abs(lm[23].y - (lm[27].visibility > 0.3 ? ankleY : hipY * 1.8)) * factor).toFixed(1);
 
                 document.getElementById('shW').innerText = measurements.shoulder;
                 document.getElementById('waist').innerText = measurements.waist;
@@ -212,20 +210,19 @@
             onFrame: async () => { await pose.send({image: videoElement}); },
             width: 640, height: 480, facingMode: isUserCamera ? 'user' : 'environment'
         });
-        cameraInstance.start();
+        cameraInstance.start().then(() => { statusBox.innerText = "カメラ準備完了"; });
     }
 
     function startSelfTimer() {
         let count = 10;
-        const btn = document.getElementById('mainBtn');
-        btn.disabled = true;
+        document.getElementById('mainBtn').disabled = true;
         const timer = setInterval(() => {
-            btn.innerText = `確定まで ${count} 秒...`;
-            if (count <= 3 && count > 0) window.speechSynthesis.speak(new SpeechSynthesisUtterance(count));
+            document.getElementById('mainBtn').innerText = `確定まで ${count} 秒...`;
+            if (count <= 3 && count > 0) speechSynthesis.speak(new SpeechSynthesisUtterance(count));
             if (count <= 0) {
                 clearInterval(timer);
+                document.getElementById('mainBtn').style.display = "none";
                 document.getElementById('catalog-section').style.display = "block";
-                btn.style.display = "none";
                 recommend();
             }
             count--;
@@ -236,8 +233,10 @@
         const sh = parseFloat(measurements.shoulder); const ws = parseFloat(measurements.waist);
         const uRec = (sh > 47) ? "2L" : (sh > 44) ? "L" : (sh > 41) ? "M" : "S";
         const uBtn = document.getElementById("rec-u-" + uRec); if(uBtn) uBtn.classList.add('ai-rec');
-        const pRec = (ws > 82) ? "W85" : (ws > 79) ? "W82" : (ws > 76) ? "W79" : (ws > 73) ? "W76";
+        const pRec = (ws > 85) ? "W88" : (ws > 79) ? "W82" : (ws > 73) ? "W76" : "W73";
         const pBtn = document.getElementById("rec-p-" + pRec); if(pBtn) pBtn.classList.add('ai-rec');
+        const tRec = (sh > 45) ? "L" : "M";
+        const tBtn = document.getElementById("rec-t-" + tRec); if(tBtn) tBtn.classList.add('ai-rec');
     }
 
     function sel(btn, item, val) {
@@ -246,7 +245,7 @@
     }
 
     function finishOrder() {
-        const res = `【採寸報告】氏名:${document.getElementById('nameInput').value}\n肩幅:${measurements.shoulder}cm / ウエスト:${measurements.waist}cm / 袖:${measurements.sleeve}cm / 股下:${measurements.inseam}cm\n`;
+        const res = `【宝塚舞台 採寸報告】\n氏名:${document.getElementById('nameInput').value}\n部署:${document.getElementById('deptInput').value} / 性別:${document.getElementById('genderInput').value}\n利き手:${document.getElementById('handInput').value} / 靴:${document.getElementById('shoeInput').value}cm\n----------------\n■AI詳細データ(cm)\n肩幅:${measurements.shoulder} / 腰:${measurements.waist}\n袖丈:${measurements.sleeve} / 股下:${measurements.inseam}\n----------------\n■選択内容\n`;
         let items = ""; for (let k in selections) items += `・${k}: ${selections[k]}\n`;
         const resText = document.getElementById('resultText'); resText.value = res + items; resText.style.display = "block";
         navigator.clipboard.writeText(res + items).then(() => alert("結果をコピーしました！"));
