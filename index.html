@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆製品照合DX</title>
+    <title>宝塚舞台：全部署対応・精密3D採寸DX</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 500px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
-        h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 12px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        h1 { font-size: 0.9rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
         input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
+
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.2rem; display: none; z-index: 100; }
+        
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
-        .result-item.fixed { border-color: #10b981; background: #f0fdf4; box-shadow: 0 0 8px rgba(16,185,129,0.2); }
-        .res-val { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: block; margin-bottom: 2px; }
-        .res-label { font-size: 0.55rem; color: #64748b; font-weight: bold; }
+        .result-item.fixed { border-color: #10b981; background: #f0fdf4; }
+        .res-val { font-size: 0.85rem; font-weight: bold; color: #1e293b; }
+
         .btn-main { width: 100%; padding: 18px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
+
         #catalog-section { display: none; width: 100%; margin-top: 15px; border-top: 2px dashed #cbd5e1; padding-top: 15px; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
         .item-name { font-weight: bold; font-size: 0.75rem; color: #334155; margin-bottom: 6px; border-left: 4px solid #3b82f6; padding-left: 8px; }
@@ -32,6 +36,7 @@
         .opt-btn.selected { background: #3b82f6 !important; color: white; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "AI推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
+        .sub-info { font-size: 0.6rem; color: #64748b; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -43,10 +48,14 @@
         <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
         <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="165"></div>
         <div class="input-group"><label>性別</label><select id="genderInput" onchange="resetCatalog()"><option value="男">男性</option><option value="女">女性</option></select></div>
-        <div class="input-group"><label>配属部署</label>
+        <div class="input-group"><label>部署（係）</label>
             <select id="deptInput" onchange="resetCatalog()">
-                <option value="進行">進行係</option><option value="小道具">小道具係</option>
-                <option value="照明">照明係</option><option value="大道具">大道具係</option><option value="衣裳">衣裳係</option><option value="背景">背景係</option>
+                <option value="大道具">大道具係</option><option value="小道具">小道具係</option>
+                <option value="衣裳">衣裳係</option><option value="照明">照明係</option>
+                <option value="音響">音響係</option><option value="進行">進行係</option>
+                <option value="背景">背景係</option><option value="電飾">電飾係</option>
+                <option value="装置">装置係</option><option value="舞台幕">舞台幕係</option>
+                <option value="公演管理">公演管理</option>
             </select>
         </div>
         <div class="input-group"><label>靴(cm)</label><input type="number" id="shoeInput" value="25.0" step="0.5"></div>
@@ -60,10 +69,10 @@
     </div>
 
     <div class="result-grid">
-        <div class="result-item"><span class="res-val" id="val-sh">-- cm</span><span class="res-label">肩幅</span></div>
-        <div class="result-item"><span class="res-val" id="val-waist">-- cm</span><span class="res-label">ウエスト</span></div>
-        <div class="result-item"><span class="res-val" id="val-sl">-- cm</span><span class="res-label">袖丈</span></div>
-        <div class="result-item"><span class="res-val" id="val-in">-- cm</span><span class="res-label">股下</span></div>
+        <div class="result-item"><span class="res-val" id="val-sh">-- cm</span><br><small>肩幅</small></div>
+        <div class="result-item"><span class="res-val" id="val-waist">-- cm</span><br><small>ウエスト</small></div>
+        <div class="result-item"><span class="res-val" id="val-sl">-- cm</span><br><small>袖丈</small></div>
+        <div class="result-item"><span class="res-val" id="val-in">-- cm</span><br><small>股下</small></div>
     </div>
 
     <button id="mainBtn" class="btn-main" onclick="runSequence()">精密3D採寸スタート</button>
@@ -80,16 +89,13 @@
     const canvasCtx = canvasElement.getContext('2d');
     let isFixed = false, liveData = {}, finalData = {}, selections = {};
 
-    // 資料データに基づくマスター（色の意味を反映済み）
     const MASTER = {
         jackets: {
             black: [{s:"S",sh:46.0},{s:"M",sh:47.5},{s:"L",sh:49.0},{s:"LL",sh:50.5},{s:"3L",sh:52.0},{s:"4L",sh:53.5},{s:"5L",sh:55.0}],
             navy: [{s:"S",sh:49.0},{s:"M",sh:50.5},{s:"L",sh:52.0},{s:"LL",sh:53.5},{s:"3L",sh:55.0},{s:"4L",sh:56.5},{s:"5L",sh:58.0}]
         },
         pants: {
-            // 黒：無着色のカタログ値を優先
             black_std: ["70","73","76","79","82","85","88","91","95","100","105","110","115","120"],
-            // 紺：実寸Wを基準（水色のW106以上などはリストに含めない）
             navy_z: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94},{d:"W86",r:99},{d:"W91",r:104},{d:"W96",r:109},{d:"W101",r:114}],
             slim: ["7","9","11","13","15","17","19"],
             gomu: ["3S","SS","S","M","L","LL","3L","4L","5L","6L"]
@@ -97,6 +103,7 @@
     };
 
     function onResults(results) {
+        // ... (計測ロジックは前回同様のため中略・計算精度維持)
         canvasCtx.save();
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
@@ -107,14 +114,11 @@
             const groundY = Math.max(lm[27].y, lm[28].y, lm[29].y, lm[30].y);
             const headY = lm[0].y;
             const cmPx = h / (Math.abs(groundY - headY) * 1.15);
-
             liveData.sh = Math.abs(lm[11].x - lm[12].x) * cmPx * 1.35;
             liveData.w_w = Math.abs(lm[23].x - lm[24].x) * cmPx * 1.8;
             liveData.sl = Math.sqrt(Math.pow(lm[11].x-lm[15].x,2)+Math.pow(lm[11].y-lm[15].y,2)) * cmPx;
-            const hipY = (lm[23].y + lm[24].y) / 2;
-            liveData.ins = Math.abs(groundY - hipY) * cmPx * 1.05;
+            liveData.ins = Math.abs(groundY - (lm[23].y + lm[24].y)/2) * cmPx * 1.05;
             liveData.w_d = Math.abs(lm[11].x - lm[12].x) * cmPx * 4.1;
-
             document.getElementById('val-sh').innerText = liveData.sh.toFixed(1) + " cm";
             document.getElementById('val-sl').innerText = liveData.sl.toFixed(1) + " cm";
             document.getElementById('val-in').innerText = liveData.ins.toFixed(1) + " cm";
@@ -151,35 +155,50 @@
 
     function renderCatalog() {
         const dept = document.getElementById('deptInput').value;
-        const isNavy = ["大道具", "背景", "制作"].includes(dept);
+        const gender = document.getElementById('genderInput').value;
         const container = document.getElementById('dynamic-catalog');
         
-        const jTable = isNavy ? MASTER.jackets.navy : MASTER.jackets.black;
+        // 判定フラグ
+        const isNavyType = ["大道具", "背景", "装置", "舞台幕"].includes(dept);
+        const isIsho = (dept === "衣裳");
+        const isStandardBlack = ["小道具", "照明", "音響", "進行", "電飾", "公演管理"].includes(dept);
+
+        // 共通アイテム：上着
+        const jTable = isNavyType ? MASTER.jackets.navy : MASTER.jackets.black;
         let jRec = jTable[0].s;
         for(let item of jTable) if(finalData.sh >= item.sh - 0.5) jRec = item.s;
 
+        // 共通アイテム：ズボン
         let pRec = "";
-        if(isNavy) {
-            // Z-DRAGON：実寸値をベースに推奨（貸与外の水色サイズは除外済み）
+        if(isNavyType) {
             for(let item of MASTER.pants.navy_z) if(finalData.waist >= item.r - 2) pRec = item.d;
-        } else {
-            // XEBEC：無着色のカタログ値を基準に推奨
+        } else if (!isIsho) {
             for(let val of MASTER.pants.black_std) if(finalData.waist >= parseInt(val) - 2) pRec = "W"+val;
         }
 
         let html = `
-            <div class="item-card"><div class="item-name">${isNavy?'上着：製作型 (紺)':'上着：公演型 (黒)'}</div>
+            <div class="item-card"><div class="item-name">${isNavyType?'上着：製作型 (紺)':'上着：公演型 (黒)'}</div>
                 <div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div>
-            </div>
-            <div class="item-card"><div class="item-name">${isNavy?'ズボン：紺/製作型 (Z-DRAGON)':'ズボン：黒/公演型 (XEBEC)'}</div>
-                <div class="opt-wrap">${(isNavy?MASTER.pants.navy_z.map(i=>i.d):MASTER.pants.black_std.map(i=>"W"+i)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div>
             </div>`;
 
-        if (document.getElementById('genderInput').value === "女") {
-            html += `<div class="item-card"><div class="item-name">女性用スリムズボン (XEBEC 1725)</div><div class="opt-wrap">${MASTER.pants.slim.map(v=>`<button class="opt-btn" onclick="sel(this,'スリム','${v}号')">${v}号</button>`).join('')}</div></div>`;
+        if (isIsho) {
+            html += `<div class="item-card"><div class="item-name">総ゴムパンツ (衣裳/楽屋用)</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>
+                     <div class="item-card"><div class="item-name">黒たび靴</div><div class="opt-wrap">${["22.5","23.0","23.5","24.0","24.5","25.0","26.0","27.0"].map(v=>`<button class="opt-btn" onclick="sel(this,'たび靴','${v}')">${v}</button>`).join('')}</div></div>
+                     <div class="item-card"><div class="item-name">エプロン / 黒靴下</div><div class="opt-wrap"><button class="opt-btn" onclick="sel(this,'エプロン','支給')">エプロン</button><button class="opt-btn" onclick="sel(this,'靴下','支給')">靴下5足組</button></div></div>`;
+        } else {
+            html += `<div class="item-card"><div class="item-name">${isNavyType?'ズボン：紺/製作型':'ズボン：黒/公演型'}</div>
+                <div class="opt-wrap">${(isNavyType?MASTER.pants.navy_z.map(i=>i.d):MASTER.pants.black_std.map(i=>"W"+i)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div>
+            </div>`;
         }
-        if (dept === "衣裳") {
-            html += `<div class="item-card"><div class="item-name">総ゴムパンツ (衣裳用)</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>`;
+
+        // 全部署共通：Tシャツ、長袖シャツ、防寒着、ベスト
+        html += `<div class="item-card"><div class="item-name">黒半袖Tシャツ / 長袖黒シャツ</div>
+                    <div class="opt-wrap">${["S","M","L","XL","XXL"].map(v=>`<button class="opt-btn" onclick="sel(this,'シャツ類','${v}')">${v}</button>`).join('')}</div></div>
+                 <div class="item-card"><div class="item-name">黒ベスト / 防寒着</div>
+                    <div class="opt-wrap">${["S","M","L","LL","3L"].map(v=>`<button class="opt-btn" onclick="sel(this,'防寒・ベスト','${v}')">${v}</button>`).join('')}</div></div>`;
+
+        if (gender === "女" && !isIsho) {
+            html += `<div class="item-card"><div class="item-name">女性用スリムズボン (XEBEC 1725)</div><div class="opt-wrap">${MASTER.pants.slim.map(v=>`<button class="opt-btn" onclick="sel(this,'スリム','${v}号')">${v}号</button>`).join('')}</div></div>`;
         }
 
         container.innerHTML = html;
@@ -193,7 +212,7 @@
     }
 
     function copyResult() {
-        const res = `【採寸報告】氏名:${document.getElementById('nameInput').value} / 部署:${document.getElementById('deptInput').value}\n肩幅:${finalData.sh.toFixed(1)}cm / ウエスト:${finalData.waist.toFixed(1)}cm / 股下:${finalData.in.toFixed(1)}cm\n選択:${JSON.stringify(selections)}`;
+        const res = `【宝塚舞台 採寸報告】\n氏名:${document.getElementById('nameInput').value}\n部署:${document.getElementById('deptInput').value}\n肩幅:${finalData.sh.toFixed(1)}cm / ウエスト:${finalData.waist.toFixed(1)}cm\n選択アイテム:${JSON.stringify(selections)}`;
         navigator.clipboard.writeText(res).then(() => alert("結果をコピーしました！"));
     }
 
