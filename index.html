@@ -3,150 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆備品DX</title>
+    <title>宝塚舞台：高精度3D採寸システム</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 550px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
-        h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        h1 { font-size: 0.9rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         
-        /* 入力エリア */
-        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.6rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 8px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        label { font-size: 0.55rem; font-weight: bold; color: #64748b; }
+        input, select { width: 100%; padding: 5px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 4px; }
 
-        .step-indicator { display: flex; justify-content: space-around; margin-bottom: 10px; gap: 5px; }
-        .step { font-size: 0.55rem; padding: 5px; border-radius: 4px; background: #e2e8f0; color: #64748b; flex: 1; text-align: center; }
-        .step.active { background: #3b82f6; color: white; font-weight: bold; }
-
-        /* カメラエリア */
-        #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 10px; border: 4px solid #e2e8f0; }
-        video { display: none; }
+        #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 10px; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
-        .guide-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); }
-        .guide-text { color: white; background: rgba(0,0,0,0.7); padding: 12px; border-radius: 8px; font-size: 0.8rem; text-align: center; line-height: 1.5; }
-        .status-msg { position: absolute; bottom: 10px; width: 100%; text-align: center; color: #0f0; font-size: 0.75rem; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        .timer-display { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 6rem; color: white; font-weight: bold; text-shadow: 0 0 20px #000; display: none; }
+        
+        .timer-overlay { position: absolute; top: 10px; left: 10px; background: rgba(255,0,0,0.7); color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: none; z-index: 100; }
+        .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; }
+        .guide-inner { background: rgba(0,0,0,0.6); display: inline-block; padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.3); }
+        .status-bar { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); color: #0f0; font-size: 0.7rem; text-align: center; padding: 4px 0; }
 
-        /* 結果表示 */
-        .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
-        .result-item { background: #f1f5f9; padding: 6px; border-radius: 6px; text-align: center; border: 1px solid #e2e8f0; }
+        .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 10px; }
+        .result-item { background: #fff; padding: 8px 4px; border-radius: 6px; text-align: center; border: 2px solid #3b82f6; }
         .res-label { font-size: 0.5rem; color: #64748b; display: block; }
-        .res-val { font-size: 0.8rem; font-weight: bold; color: #2563eb; }
+        .res-val { font-size: 0.9rem; font-weight: bold; color: #1e293b; }
+        .unit { font-size: 0.6rem; margin-left: 2px; }
 
-        #catalog-section { display: none; width: 100%; border-top: 2px dashed #cbd5e1; padding-top: 15px; }
-        .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fff; }
-        .item-name { font-weight: bold; font-size: 0.8rem; color: #1e293b; margin-bottom: 8px; border-left: 4px solid #3b82f6; padding-left: 8px; }
-        .opt-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
-        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; min-width: 42px; text-align: center; }
-        .opt-btn.selected { background: #3b82f6; color: white; border-color: #3b82f6; }
-        .ai-rec { border: 2px solid #10b981 !important; background: #f0fdf4; position: relative; }
-        .ai-rec::after { content: "推奨"; position: absolute; top: -10px; right: -2px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 3px; border-radius: 3px; }
+        .btn-main { width: 100%; padding: 15px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .btn-main:disabled { background: #94a3b8; }
 
-        .action-btn { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-measure { background: #10b981; color: white; }
-        textarea { width: 100%; height: 120px; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 0.7rem; background: #f8fafc; margin-top: 15px; }
+        #catalog-section { display: none; width: 100%; margin-top: 15px; }
+        .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; }
+        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; margin: 2px; min-width: 42px; }
+        .selected { background: #3b82f6 !important; color: white; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>宝塚舞台：精密3D採寸＆備品DX</h1>
+    <h1>宝塚舞台：高精度3D採寸ポータル</h1>
     
-    <!-- 入力項目 -->
     <div class="input-row">
-        <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
-        <div class="input-group"><label>性別</label>
-            <select id="genderInput" onchange="updateUI()"><option value="女">女性</option><option value="男">男性</option></select>
-        </div>
+        <div class="input-group"><label>氏名</label><input type="text" id="nameInput"></div>
+        <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="165" oninput="updateRealtime()"></div>
         <div class="input-group"><label>部署</label>
-            <select id="deptInput" onchange="updateUI()">
-                <option value="制作">制作</option><option value="大道具">大道具</option>
-                <option value="小道具">小道具</option><option value="進行">進行</option>
-                <option value="衣裳">衣裳</option><option value="照明">照明</option>
-                <option value="音響">音響</option><option value="電飾">電飾</option>
-                <option value="背景">背景</option>
-            </select>
+            <select id="deptInput" onchange="updateUI()"><option value="制作">制作</option><option value="大道具">大道具</option><option value="衣裳">衣裳</option><option value="進行">進行</option><option value="背景">背景</option></select>
         </div>
-        <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="165"></div>
+        <div class="input-group"><label>性別</label><select id="genderInput" onchange="updateUI()"><option value="女">女性</option><option value="男">男性</option></select></div>
         <div class="input-group"><label>靴(cm)</label><input type="number" id="shoeInput" value="24.5" step="0.5"></div>
-        <div class="input-group"><label>利き手</label>
-            <select id="handInput"><option value="右">右利き</option><option value="左">左利き</option></select>
-        </div>
-    </div>
-
-    <div class="step-indicator">
-        <div id="step1" class="step active">1. 正面計測</div>
-        <div id="step2" class="step">2. 側面計測</div>
-        <div id="step3" class="step">3. サイズ選定</div>
+        <div class="input-group"><label>利き手</label><select id="handInput"><option value="右">右</option><option value="左">左</option></select></div>
     </div>
 
     <div id="canvas-container">
+        <div id="timerBox" class="timer-overlay">計測中: 10</div>
         <video id="input_video" playsinline muted autoplay></video>
         <canvas id="output_canvas"></canvas>
-        <div class="guide-overlay" id="guideOverlay">
-            <div class="guide-text" id="guideText">カメラを正面に置き<br>全身を映してください</div>
+        <div class="guide-msg" id="guideMsg">
+            <div class="guide-inner" id="guideText">足元まで画面に入れてください</div>
         </div>
-        <div id="timerDisplay" class="timer-display">10</div>
-        <div id="statusBox" class="status-msg">AI起動中...</div>
+        <div class="status-bar" id="statusBar">AIスタンバイ... 足元を映してください</div>
     </div>
 
     <div class="result-grid">
-        <div class="result-item"><span class="res-label">肩幅</span><span class="res-val"><span id="shW">--</span> cm</span></div>
-        <div class="result-item"><span class="res-label">ウエスト</span><span class="res-val"><span id="waist">--</span> cm</span></div>
-        <div class="result-item"><span class="res-label">袖丈</span><span class="res-val"><span id="slL">--</span> cm</span></div>
-        <div class="result-item"><span class="res-label">股下</span><span class="res-val"><span id="inL">--</span> cm</span></div>
+        <div class="result-item"><span class="res-label">肩幅</span><span class="res-val"><span id="val-sh">--</span><span class="unit">cm</span></span></div>
+        <div class="result-item"><span class="res-label">ウエスト(周)</span><span class="res-val"><span id="val-waist">--</span><span class="unit">cm</span></span></div>
+        <div class="result-item"><span class="res-label">袖丈</span><span class="res-val"><span id="val-sl">--</span><span class="unit">cm</span></span></div>
+        <div class="result-item"><span class="res-label">股下(正確)</span><span class="res-val"><span id="val-in">--</span><span class="unit">cm</span></span></div>
     </div>
 
-    <button id="mainBtn" class="action-btn btn-measure" onclick="startDualMeasurement()">採寸開始 (正面→側面)</button>
+    <button id="mainBtn" class="btn-main" onclick="runSequence()">採寸開始 (正面・側面 各10秒)</button>
 
-    <!-- カタログセクション -->
     <div id="catalog-section">
-        <div class="item-card" id="card-jacket">
-            <div class="item-name" id="jacket-title">上着</div>
-            <div class="opt-wrap" id="jacket-options"></div>
+        <div style="background:#e0f2fe; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.75rem;">
+            <b>AI選定結果:</b> 立体データに基づき最適なサイズをマークしました。
         </div>
-        <div class="item-card" id="card-pants">
-            <div class="item-name" id="pants-title">ズボン</div>
-            <div class="opt-wrap" id="pants-options"></div>
-        </div>
-        <div class="item-card" id="card-slim" style="display:none; background:#fffcf0;">
-            <div class="item-name">女性用スリムズボン (XEBEC 1725)</div>
-            <div class="opt-wrap" id="slim-options"></div>
-        </div>
-        <div class="item-card" id="card-gomu" style="display:none; background:#f0fdf4;">
-            <div class="item-name">衣裳/楽屋用 総ゴムパンツ</div>
-            <div class="opt-wrap" id="gomu-options"></div>
-        </div>
-        <button class="action-btn" style="background:#3b82f6; color:white;" onclick="finishOrder()">申請内容をコピー</button>
+        <div id="dynamic-catalog"></div>
+        <button class="btn-main" style="background:#3b82f6; margin-top:10px;" onclick="copyResult()">結果をコピーして終了</button>
     </div>
-
-    <textarea id="resultText" style="display:none;"></textarea>
 </div>
 
 <script>
-    // 資料データ統合
-    const DATA = {
-        j_black: [{s:"S",w:46},{s:"M",w:47.5},{s:"L",w:49},{s:"LL",w:50.5},{s:"3L",w:52},{s:"4L",w:53.5},{s:"5L",w:55}],
-        j_navy: [{s:"S",w:49},{s:"M",w:50.5},{s:"L",w:52},{s:"LL",w:53.5},{s:"3L",w:55},{s:"4L",w:56.5},{s:"5L",w:58}],
-        p_std: ["70","73","76","79","82","85","88","91","95","100","105","110","115","120"],
-        p_navy: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94},{d:"W86",r:99},{d:"W91",r:104},{d:"W96",r:109},{d:"W101",r:114}],
-        p_slim: ["7","9","11","13","15","17","19"],
-        p_gomu: ["3S","SS","S","M","L","LL","3L","4L","5L"]
-    };
-
-    let currentStep = 1;
-    let front = { w:0, sh:0, sl:0, in:0 };
-    let side = { depth: 0 };
-    let final = { waist:0, shoulder:0, sleeve:0, inseam:0 };
-    let selections = {};
-
     const videoElement = document.getElementById('input_video');
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
+    
+    let isMeasuring = false;
+    let currentPhase = 'wait'; // wait, front, side
+    let liveData = { sh:0, w_width:0, w_depth:0, sl:0, inseam:0 };
+    let captured = { front: {}, side: {} };
+
+    // サイズ表（前回の資料を引用）
+    const TABLES = {
+        j_black: [{s:"S",w:46},{s:"M",w:47.5},{s:"L",w:49},{s:"LL",w:50.5},{s:"3L",w:52},{s:"4L",w:53.5},{s:"5L",w:55}],
+        j_navy: [{s:"S",w:49},{s:"M",w:50.5},{s:"L",w:52},{s:"LL",w:53.5},{s:"3L",w:55},{s:"4L",w:56.5},{s:"5L",w:58}],
+        p_std: ["70","73","76","79","82","85","88","91","95","100","105","110","115","120"],
+        p_navy: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94}]
+    };
 
     function onResults(results) {
         canvasCtx.save();
@@ -157,145 +111,148 @@
             drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 2});
             const lm = results.poseLandmarks;
             const h = parseFloat(document.getElementById('heightInput').value);
-            const cmPx = h / (Math.abs(((lm[27].y+lm[28].y)/2) - lm[0].y) * 1.15);
 
-            if (currentStep === 1) {
-                front.w = Math.abs(lm[23].x - lm[24].x) * canvasElement.width * cmPx * 1.8;
-                front.sh = Math.abs(lm[11].x - lm[12].x) * canvasElement.width * cmPx * 1.4;
-                front.sl = Math.sqrt(Math.pow(lm[11].x-lm[15].x,2)+Math.pow(lm[11].y-lm[15].y,2)) * canvasElement.width * cmPx;
-                front.in = Math.abs(lm[23].y - (lm[27].y+lm[28].y)/2) * canvasElement.height * cmPx;
-            } else if (currentStep === 2) {
-                // 側面時の厚み：肩のマーカーのX軸距離を利用
-                side.depth = Math.abs(lm[11].x - lm[12].x) * canvasElement.width * cmPx * 4.5;
+            // 【精度向上】地面の推定：足首やつま先のうち、より低い座標を地面とする
+            const groundY = Math.max(lm[27].y, lm[28].y, lm[29].y, lm[30].y);
+            const headY = lm[0].y;
+            const pixelHeight = Math.abs(groundY - headY);
+            
+            // 足元が切れているか判定
+            if (groundY > 0.98) {
+                document.getElementById('statusBar').innerText = "⚠️ 足元が切れています！もっと離れてください";
+                document.getElementById('statusBar').style.color = "#ff4757";
+            } else {
+                document.getElementById('statusBar').innerText = "● 解析中: 全身が正しく映っています";
+                document.getElementById('statusBar').style.color = "#0f0";
+            }
+
+            const cmPx = h / (pixelHeight * 1.15); // 身長とピクセルの比率
+
+            // リアルタイム計算
+            liveData.sh = Math.abs(lm[11].x - lm[12].x) * canvasElement.width * cmPx * 1.35;
+            liveData.w_width = Math.abs(lm[23].x - lm[24].x) * canvasElement.width * cmPx * 1.8;
+            liveData.sl = Math.sqrt(Math.pow(lm[11].x-lm[15].x,2)+Math.pow(lm[11].y-lm[15].y,2)) * canvasElement.width * cmPx;
+            
+            // 【股下の正確な算出】股関節の中点から、足首ではなく「地面推定値」までを測る
+            const hipCenterY = (lm[23].y + lm[24].y) / 2;
+            liveData.inseam = Math.abs(groundY - hipCenterY) * canvasElement.height * cmPx * 1.05;
+
+            // 側面用の厚み（肩のZ軸的広がりをX軸で代用）
+            liveData.w_depth = Math.abs(lm[11].x - lm[12].x) * canvasElement.width * cmPx * 4.2;
+
+            // 画面反映
+            if (!isMeasuring || currentPhase === 'front') {
+                document.getElementById('val-sh').innerText = liveData.sh.toFixed(1);
+                document.getElementById('val-sl').innerText = liveData.sl.toFixed(1);
+                document.getElementById('val-in').innerText = liveData.inseam.toFixed(1);
+                // 正面時はウエスト幅のみで暫定表示
+                document.getElementById('val-waist').innerText = (liveData.w_width * 1.6).toFixed(1);
             }
         }
         canvasCtx.restore();
     }
 
-    async function startDualMeasurement() {
+    async function runSequence() {
+        isMeasuring = true;
         document.getElementById('mainBtn').disabled = true;
-        const timerDisp = document.getElementById('timerDisplay');
-        timerDisp.style.display = "block";
+        document.getElementById('timerBox').style.display = "block";
 
-        // Step 1: 正面
-        currentStep = 1;
-        document.getElementById('guideText').innerHTML = "【正面】<br>まっすぐ立ち、腕を少し広げてください";
-        await countdown(8);
-        
-        // Step 2: 側面
-        currentStep = 2;
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
+        // PHASE 1: 正面
+        currentPhase = 'front';
+        document.getElementById('guideText').innerHTML = "【正面】<br>まっすぐ立ち、10秒キープしてください";
+        await countdown(10);
+        captured.front = JSON.parse(JSON.stringify(liveData));
+
+        // PHASE 2: 側面
+        currentPhase = 'side';
         document.getElementById('guideText').innerHTML = "【側面】<br>右側に90度回転してください";
         speechSynthesis.speak(new SpeechSynthesisUtterance("右に回ってください"));
-        await countdown(8);
+        await countdown(10);
+        captured.side = JSON.parse(JSON.stringify(liveData));
 
-        // Step 3: 計算
-        calculate();
+        finishAll();
     }
 
     function countdown(sec) {
         return new Promise(resolve => {
             let c = sec;
-            const interval = setInterval(() => {
-                document.getElementById('timerDisplay').innerText = c;
+            const timer = setInterval(() => {
+                document.getElementById('timerBox').innerText = `計測中: ${c}`;
                 if (c <= 3) speechSynthesis.speak(new SpeechSynthesisUtterance(c));
-                if (c <= 0) { clearInterval(interval); resolve(); }
+                if (c <= 0) { clearInterval(timer); resolve(); }
                 c--;
             }, 1000);
         });
     }
 
-    function calculate() {
-        // 立体周囲計算 (楕円近似)
-        const a = front.w / 2; const b = side.depth / 2;
-        const h_val = Math.pow(a - b, 2) / Math.pow(a + b, 2);
-        final.waist = (Math.PI * (a + b) * (1 + (3 * h_val) / (10 + Math.sqrt(4 - 3 * h_val)))).toFixed(1);
-        final.shoulder = (front.sh).toFixed(1);
-        final.sleeve = (front.sl).toFixed(1);
-        final.inseam = (front.in).toFixed(1);
+    function finishAll() {
+        isMeasuring = false;
+        // 最終ウエスト計算 (楕円近似)
+        const a = captured.front.w_width / 2;
+        const b = captured.side.w_depth / 2;
+        const h_val = Math.pow(a-b,2)/Math.pow(a+b,2);
+        const finalWaist = (Math.PI * (a+b) * (1 + (3*h_val)/(10 + Math.sqrt(4-3*h_val)))).toFixed(1);
 
-        document.getElementById('waist').innerText = final.waist;
-        document.getElementById('shW').innerText = final.shoulder;
-        document.getElementById('slL').innerText = final.sleeve;
-        document.getElementById('inL').innerText = final.inseam;
-
+        document.getElementById('val-waist').innerText = finalWaist;
+        document.getElementById('val-in').innerText = captured.front.inseam.toFixed(1);
+        
         document.getElementById('canvas-container').style.display = "none";
         document.getElementById('mainBtn').style.display = "none";
-        document.getElementById('step2').classList.remove('active');
-        document.getElementById('step3').classList.add('active');
         document.getElementById('catalog-section').style.display = "block";
         
-        recommend();
+        renderCatalog(finalWaist, captured.front.sh);
     }
 
-    function recommend() {
+    function renderCatalog(waist, shoulder) {
         const dept = document.getElementById('deptInput').value;
-        const isNavy = ["大道具", "背景", "制作"].includes(dept);
-        const ws = parseFloat(final.waist);
-        const sh = parseFloat(final.shoulder);
-
-        // 上着推奨
-        const jTable = isNavy ? DATA.j_navy : DATA.j_black;
-        let recJ = jTable[0].s;
-        for(let i of jTable) if(sh >= i.w - 1) recJ = i.s;
-        const jBtn = document.getElementById("rec-j-" + recJ); if(jBtn) jBtn.classList.add('ai-rec');
-
-        // ズボン推奨
-        if(isNavy) {
-            let recP = "W59";
-            for(let i of DATA.p_navy) if(ws >= i.r - 2) recP = i.d;
-            const pBtn = document.getElementById("rec-p-" + recP); if(pBtn) pBtn.classList.add('ai-rec');
-        } else {
-            let recP = "70";
-            for(let i of DATA.p_std) if(ws >= parseInt(i) - 2) recP = i;
-            const pBtn = document.getElementById("rec-p-" + recP); if(pBtn) pBtn.classList.add('ai-rec');
-        }
-    }
-
-    function updateUI() {
-        const dept = document.getElementById('deptInput').value;
-        const isNavy = ["大道具", "背景", "制作"].includes(dept);
+        const isNavy = ["大道具", "背景"].includes(dept);
+        const container = document.getElementById('dynamic-catalog');
         
-        // 上着ボタン生成
-        const jOpts = document.getElementById('jacket-options');
-        document.getElementById('jacket-title').innerText = isNavy ? "上着：紺/製作型 (XEBEC 1480)" : "上着：黒/公演型 (XEBEC 1600)";
-        jOpts.innerHTML = (isNavy ? DATA.j_navy : DATA.j_black).map(i => `<button class="opt-btn" id="rec-j-${i.s}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('');
+        // 上着判定
+        let jRec = "";
+        const jTable = isNavy ? TABLES.j_navy : TABLES.j_black;
+        for(let i of jTable) if(shoulder >= i.w - 1) jRec = i.s;
 
-        // ズボンボタン生成
-        const pOpts = document.getElementById('pants-options');
+        // ズボン判定
+        let pRec = "";
         if(isNavy) {
-            document.getElementById('pants-title').innerText = "紺ズボン：製作型 (Z-DRAGON)";
-            pOpts.innerHTML = DATA.p_navy.map(i => `<button class="opt-btn" id="rec-p-${i.d}" onclick="sel(this,'紺ズボン','${i.d}')">${i.d}</button>`).join('');
+            for(let i of TABLES.p_navy) if(waist >= i.r - 2) pRec = i.d;
         } else {
-            document.getElementById('pants-title').innerText = "黒ズボン：公演型 (XEBEC 1603)";
-            pOpts.innerHTML = DATA.p_std.map(i => `<button class="opt-btn" id="rec-p-${i}" onclick="sel(this,'黒ズボン','W${i}')">W${i}</button>`).join('');
+            for(let i of TABLES.p_std) if(waist >= parseInt(i) - 2) pRec = "W"+i;
         }
 
-        // 女性/衣裳用表示
-        document.getElementById('card-slim').style.display = (document.getElementById('genderInput').value === "女") ? "block" : "none";
-        document.getElementById('card-gomu').style.display = (dept === "衣裳" || dept === "進行") ? "block" : "none";
-        
-        document.getElementById('slim-options').innerHTML = DATA.p_slim.map(i => `<button class="opt-btn" onclick="sel(this,'スリム','${i}号')">${i}号</button>`).join('');
-        document.getElementById('gomu-options').innerHTML = DATA.p_gomu.map(i => `<button class="opt-btn" onclick="sel(this,'総ゴム','${i}')">${i}</button>`).join('');
+        container.innerHTML = `
+            <div class="item-card">
+                <div style="font-weight:bold; font-size:0.8rem; margin-bottom:5px;">${isNavy?'上着(紺)':'上着(黒)'}</div>
+                <div class="opt-wrap">
+                    ${jTable.map(i => `<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}
+                </div>
+            </div>
+            <div class="item-card">
+                <div style="font-weight:bold; font-size:0.8rem; margin-bottom:5px;">${isNavy?'ズボン(紺)':'ズボン(黒)'}</div>
+                <div class="opt-wrap">
+                    ${(isNavy?TABLES.p_navy.map(i=>i.d):TABLES.p_std.map(i=>"W"+i)).map(val => `<button class="opt-btn ${val===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${val}')">${val}</button>`).join('')}
+                </div>
+            </div>
+        `;
     }
 
-    function sel(btn, item, val) {
+    function sel(btn, cat, val) {
         btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected'); selections[item] = val;
-    }
-
-    function finishOrder() {
-        const res = `【宝塚舞台 採寸報告】\n氏名:${document.getElementById('nameInput').value}\n部署:${document.getElementById('deptInput').value}\n靴:${document.getElementById('shoeInput').value}cm / 利き手:${document.getElementById('handInput').value}\n----------------\n■AI立体データ\nウエスト:${final.waist} / 肩幅:${final.shoulder}\n袖丈:${final.sleeve} / 股下:${final.inseam}\n----------------\n■選択内容\n`;
-        let items = ""; for (let k in selections) items += `・${k}: ${selections[k]}\n`;
-        navigator.clipboard.writeText(res + items).then(() => alert("結果をコピーしました！"));
+        btn.classList.add('selected');
     }
 
     const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-    pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5 });
+    pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.6 });
     pose.onResults(onResults);
-    new Camera(videoElement, { onFrame: async () => { await pose.send({image: videoElement}); }, width: 640, height: 480 }).start();
-    updateUI();
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => { await pose.send({image: videoElement}); },
+        width: 640, height: 480
+    });
+    camera.start();
+
+    function updateUI() { /* 必要に応じて初期化 */ }
 </script>
 </body>
 </html>
