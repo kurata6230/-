@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆製品照合システム</title>
+    <title>宝塚舞台：精密3D採寸＆製品照合DX</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -32,7 +32,6 @@
         .opt-btn.selected { background: #3b82f6 !important; color: white; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "AI推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
-        .sub-info { font-size: 0.6rem; color: #64748b; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -81,14 +80,16 @@
     const canvasCtx = canvasElement.getContext('2d');
     let isFixed = false, liveData = {}, finalData = {}, selections = {};
 
-    // 画像資料からのマスターデータ
+    // 資料データに基づくマスター（色の意味を反映済み）
     const MASTER = {
         jackets: {
             black: [{s:"S",sh:46.0},{s:"M",sh:47.5},{s:"L",sh:49.0},{s:"LL",sh:50.5},{s:"3L",sh:52.0},{s:"4L",sh:53.5},{s:"5L",sh:55.0}],
             navy: [{s:"S",sh:49.0},{s:"M",sh:50.5},{s:"L",sh:52.0},{s:"LL",sh:53.5},{s:"3L",sh:55.0},{s:"4L",sh:56.5},{s:"5L",sh:58.0}]
         },
         pants: {
+            // 黒：無着色のカタログ値を優先
             black_std: ["70","73","76","79","82","85","88","91","95","100","105","110","115","120"],
+            // 紺：実寸Wを基準（水色のW106以上などはリストに含めない）
             navy_z: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94},{d:"W86",r:99},{d:"W91",r:104},{d:"W96",r:109},{d:"W101",r:114}],
             slim: ["7","9","11","13","15","17","19"],
             gomu: ["3S","SS","S","M","L","LL","3L","4L","5L","6L"]
@@ -153,16 +154,16 @@
         const isNavy = ["大道具", "背景", "制作"].includes(dept);
         const container = document.getElementById('dynamic-catalog');
         
-        // 1. 上着推奨
         const jTable = isNavy ? MASTER.jackets.navy : MASTER.jackets.black;
         let jRec = jTable[0].s;
         for(let item of jTable) if(finalData.sh >= item.sh - 0.5) jRec = item.s;
 
-        // 2. ズボン推奨
         let pRec = "";
         if(isNavy) {
+            // Z-DRAGON：実寸値をベースに推奨（貸与外の水色サイズは除外済み）
             for(let item of MASTER.pants.navy_z) if(finalData.waist >= item.r - 2) pRec = item.d;
         } else {
+            // XEBEC：無着色のカタログ値を基準に推奨
             for(let val of MASTER.pants.black_std) if(finalData.waist >= parseInt(val) - 2) pRec = "W"+val;
         }
 
@@ -170,7 +171,7 @@
             <div class="item-card"><div class="item-name">${isNavy?'上着：製作型 (紺)':'上着：公演型 (黒)'}</div>
                 <div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div>
             </div>
-            <div class="item-card"><div class="item-name">${isNavy?'ズボン：紺/製作型 (Z-DRAGON等)':'ズボン：黒/公演型 (XEBEC 1603)'}</div>
+            <div class="item-card"><div class="item-name">${isNavy?'ズボン：紺/製作型 (Z-DRAGON)':'ズボン：黒/公演型 (XEBEC)'}</div>
                 <div class="opt-wrap">${(isNavy?MASTER.pants.navy_z.map(i=>i.d):MASTER.pants.black_std.map(i=>"W"+i)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div>
             </div>`;
 
@@ -178,7 +179,7 @@
             html += `<div class="item-card"><div class="item-name">女性用スリムズボン (XEBEC 1725)</div><div class="opt-wrap">${MASTER.pants.slim.map(v=>`<button class="opt-btn" onclick="sel(this,'スリム','${v}号')">${v}号</button>`).join('')}</div></div>`;
         }
         if (dept === "衣裳") {
-            html += `<div class="item-card"><div class="item-name">総ゴムパンツ (衣裳/楽屋用)</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>`;
+            html += `<div class="item-card"><div class="item-name">総ゴムパンツ (衣裳用)</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>`;
         }
 
         container.innerHTML = html;
