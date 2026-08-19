@@ -12,11 +12,13 @@
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 500px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.9rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         
+        /* 入力エリア */
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
         input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
 
+        /* カメラエリア */
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         video { display: none; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
@@ -24,24 +26,27 @@
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: none; z-index: 100; }
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); }
-        .guide-inner { background: rgba(0,0,0,0.7); display: inline-block; padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; border: 1px solid #3b82f6; }
+        .guide-inner { background: rgba(0,0,0,0.7); display: inline-block; padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; border: 1px solid #3b82f6; line-height: 1.4; }
         
+        /* 結果グリッド */
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
-        .result-item.fixed { border-color: #10b981; background: #f0fdf4; }
+        .result-item.fixed { border-color: #10b981; background: #f0fdf4; box-shadow: 0 0 8px rgba(16,185,129,0.2); }
         .res-val { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: block; }
         .res-label { font-size: 0.55rem; color: #64748b; font-weight: bold; }
 
         .btn-main { width: 100%; padding: 18px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
 
+        /* カタログ */
         #catalog-section { display: none; width: 100%; margin-top: 15px; border-top: 2px dashed #cbd5e1; padding-top: 15px; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
         .item-name { font-weight: bold; font-size: 0.75rem; color: #334155; margin-bottom: 6px; border-left: 4px solid #3b82f6; padding-left: 8px; }
         .opt-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
         .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; min-width: 45px; text-align: center; }
-        .opt-btn.selected { background: #3b82f6 !important; color: white; }
+        .opt-btn.selected { background: #3b82f6 !important; color: white; border-color: #3b82f6; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "AI推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
+        .sub-info { font-size: 0.6rem; color: #64748b; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -78,10 +83,10 @@
     </div>
 
     <div class="result-grid">
-        <div class="result-item"><span class="res-val" id="val-sh">-- cm</span><span class="res-label">肩幅</span></div>
-        <div class="result-item"><span class="res-val" id="val-waist">-- cm</span><span class="res-label">ウエスト</span></div>
-        <div class="result-item"><span class="res-val" id="val-sl">-- cm</span><span class="res-label">袖丈</span></div>
-        <div class="result-item"><span class="res-val" id="val-in">-- cm</span><span class="res-label">股下</span></div>
+        <div class="result-item" id="box-sh"><span class="res-val" id="val-sh">-- cm</span><span class="res-label">肩幅</span></div>
+        <div class="result-item" id="box-waist"><span class="res-val" id="val-waist">-- cm</span><span class="res-label">ウエスト</span></div>
+        <div class="result-item" id="box-sl"><span class="res-val" id="val-sl">-- cm</span><span class="res-label">袖丈</span></div>
+        <div class="result-item" id="box-in"><span class="res-val" id="val-in">-- cm</span><span class="res-label">股下</span></div>
     </div>
 
     <button id="mainBtn" class="btn-main" onclick="runSequence()">採寸開始 (正面・側面)</button>
@@ -100,7 +105,9 @@
     let isFixed = false, isUserCamera = true, cameraInstance = null;
     let liveData = { sh:0, w_w:0, w_d:0, sl:0, ins:0 };
     let finalData = { sh:0, waist:0, sl:0, ins:0 };
+    let selections = {};
 
+    // 資料に基づく全マスターデータ
     const MASTER = {
         jackets: {
             black: [{s:"S",sh:46.0},{s:"M",sh:47.5},{s:"L",sh:49.0},{s:"LL",sh:50.5},{s:"3L",sh:52.0},{s:"4L",sh:53.5},{s:"5L",sh:55.0}],
@@ -124,9 +131,10 @@
             const lm = results.poseLandmarks;
             const h = parseFloat(document.getElementById('heightInput').value);
 
+            // 身長を基準としたcm正規化計算
             const groundY = Math.max(lm[27].y, lm[28].y, lm[29].y, lm[30].y);
             const headY = lm[0].y;
-            const cmPx = h / (Math.abs(groundY - headY) * 1.15);
+            const cmPx = h / (Math.abs(groundY - headY) * 1.15); // スケーリング定数
 
             liveData.sh = Math.abs(lm[11].x - lm[12].x) * cmPx * 1.35;
             liveData.w_w = Math.abs(lm[23].x - lm[24].x) * cmPx * 1.8;
@@ -191,36 +199,43 @@
         const dept = document.getElementById('deptInput').value;
         const gender = document.getElementById('genderInput').value;
         const container = document.getElementById('dynamic-catalog');
-        const isNavy = ["大道具", "背景", "装置", "舞台幕"].includes(dept);
+        
+        const isNavyType = ["大道具", "背景", "装置", "舞台幕"].includes(dept);
         const isIsho = (dept === "衣裳");
 
-        const jTable = isNavy ? MASTER.jackets.navy : MASTER.jackets.black;
+        // 上着推奨
+        const jTable = isNavyType ? MASTER.jackets.navy : MASTER.jackets.black;
         let jRec = jTable[0].s;
         for(let item of jTable) if(finalData.sh >= item.sh - 0.5) jRec = item.s;
 
+        // ズボン推奨
         let pRec = "";
-        if(isNavy) {
+        if(isNavyType) {
             for(let item of MASTER.pants.navy_z) if(finalData.waist >= item.r - 2) pRec = item.d;
         } else if (!isIsho) {
             for(let val of MASTER.pants.black_std) if(finalData.waist >= parseInt(val) - 2) pRec = "W"+val;
         }
 
         let html = `
-            <div class="item-card"><div class="item-name">${isNavy?'上着：紺/製作型':'上着：黒/公演型'}</div>
+            <div class="item-card"><div class="item-name">${isNavyType?'上着：紺/製作型 (1480)':'上着：黒/公演型 (1600)'}</div>
                 <div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div>
             </div>`;
 
         if (isIsho) {
-            html += `<div class="item-card"><div class="item-name">総ゴムパンツ</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>
-                     <div class="item-card"><div class="item-name">たび靴 / エプロン</div><div class="opt-wrap"><button class="opt-btn" onclick="sel(this,'たび','24.0')">24.0</button><button class="opt-btn" onclick="sel(this,'エプロン','支給')">エプロン</button></div></div>`;
+            html += `<div class="item-card"><div class="item-name">総ゴムパンツ (61460)</div><div class="opt-wrap">${MASTER.pants.gomu.map(v=>`<button class="opt-btn" onclick="sel(this,'総ゴム','${v}')">${v}</button>`).join('')}</div></div>
+                     <div class="item-card"><div class="item-name">たび靴 / エプロン</div><div class="opt-wrap">${["23.5","24.0","24.5","25.0","26.0"].map(v=>`<button class="opt-btn" onclick="sel(this,'たび','${v}')">${v}</button>`).join('')}<button class="opt-btn" onclick="sel(this,'エプロン','支給')">エプロン</button></div></div>`;
         } else {
-            html += `<div class="item-card"><div class="item-name">ズボン</div>
-                <div class="opt-wrap">${(isNavy?MASTER.pants.navy_z.map(i=>i.d):MASTER.pants.black_std.map(i=>"W"+i)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div>
+            html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div>
+                <div class="opt-wrap">${(isNavyType?MASTER.pants.navy_z.map(i=>i.d):MASTER.pants.black_std.map(i=>"W"+i)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div>
             </div>`;
         }
 
-        html += `<div class="item-card"><div class="item-name">Tシャツ / シャツ / ベスト</div>
-            <div class="opt-wrap">${["S","M","L","LL","3L"].map(v=>`<button class="opt-btn" onclick="sel(this,'その他','${v}')">${v}</button>`).join('')}</div></div>`;
+        if(gender === "女" && !isIsho) {
+            html += `<div class="item-card"><div class="item-name">女性スリムズボン (1725)</div><div class="opt-wrap">${MASTER.pants.slim.map(v=>`<button class="opt-btn" onclick="sel(this,'スリム','${v}号')">${v}号</button>`).join('')}</div></div>`;
+        }
+
+        html += `<div class="item-card"><div class="item-name">Tシャツ / シャツ / ベスト / 防寒着</div>
+            <div class="opt-wrap">${["S","M","L","LL","3L"].map(v=>`<button class="opt-btn" onclick="sel(this,'共通','${v}')">${v}</button>`).join('')}</div></div>`;
 
         container.innerHTML = html;
         document.getElementById('mainBtn').disabled = false;
@@ -229,12 +244,12 @@
 
     function sel(btn, cat, val) {
         btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+        btn.classList.add('selected'); selections[cat] = val;
     }
 
     function copyResult() {
-        const res = `【採寸報告】氏名:${document.getElementById('nameInput').value} 部署:${document.getElementById('deptInput').value}\n肩幅:${finalData.sh.toFixed(1)} ウエスト:${finalData.waist.toFixed(1)} 股下:${finalData.ins.toFixed(1)}`;
-        navigator.clipboard.writeText(res).then(() => alert("コピーしました！"));
+        const res = `【宝塚舞台 採寸報告】\n氏名:${document.getElementById('nameInput').value}\n部署:${document.getElementById('deptInput').value}\n計測値[肩幅:${finalData.sh.toFixed(1)}, 腰:${finalData.waist.toFixed(1)}, 股下:${finalData.in.toFixed(1)}]\n選択:${JSON.stringify(selections)}`;
+        navigator.clipboard.writeText(res).then(() => alert("結果をコピーしました！"));
     }
 
     function resetCatalog() { if(isFixed) renderCatalog(); }
