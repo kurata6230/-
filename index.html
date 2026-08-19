@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：全部署DX・精密採寸システム</title>
+    <title>宝塚舞台：精密採寸＆全資料照合DXポータル</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -11,29 +11,23 @@
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 500px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.9rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
-        
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
-
+        label { font-size: 0.55rem; font-weight: bold; color: #64748b; }
+        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; }
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
         video { display: none; }
-        
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: none; z-index: 100; }
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); }
         .guide-inner { background: rgba(0,0,0,0.7); display: inline-block; padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; border: 1px solid #3b82f6; line-height: 1.4; }
-
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
         .result-item.fixed { border-color: #10b981; background: #f0fdf4; }
         .res-val { font-size: 0.8rem; font-weight: bold; color: #1e293b; display: block; }
         .res-label { font-size: 0.5rem; color: #64748b; }
-
         .btn-main { width: 100%; padding: 18px; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
-
         #catalog-section { display: none; width: 100%; margin-top: 15px; }
         .user-notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.65rem; color: #9a3412; line-height: 1.4; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
@@ -42,11 +36,10 @@
         .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; min-width: 45px; }
         .opt-btn.selected { background: #3b82f6 !important; color: white; border-color: #3b82f6; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
-        .ai-rec::after { content: "AI推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
-
+        .ai-rec::after { content: "推奨"; position: absolute; top: -12px; right: -5px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
         .data-viewer { margin-top: 10px; border: 2px solid #3b82f6; border-radius: 8px; overflow: hidden; }
         .data-header { background: #3b82f6; color: white; padding: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
-        .data-body { display: none; padding: 10px; background: #fff; max-height: 400px; overflow-y: auto; }
+        .data-body { display: none; padding: 10px; background: #fff; max-height: 500px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.65rem; margin-bottom: 15px; }
         th, td { border: 1px solid #e2e8f0; padding: 6px 2px; text-align: center; }
         .row-highlight { background: #fef9c3 !important; border: 2px solid #f59e0b !important; font-weight: bold; }
@@ -55,8 +48,7 @@
 <body>
 
 <div class="card">
-    <h1>宝塚舞台：精密3D採寸＆製品照合</h1>
-    
+    <h1>宝塚舞台：精密採寸＆全資料照合DX</h1>
     <div class="input-row">
         <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
         <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="165"></div>
@@ -91,11 +83,11 @@
 
     <div id="catalog-section">
         <div class="user-notice">
-            <b>【確認】</b>表示数値はAI計測の暫定値です。<b>下の「資料」を確認し、ご自身の判断でサイズを変更・選定して</b>コピーしてください。
+            表示数値はAI計測の暫定値です。<b>必ず下の「資料」を確認し、ご自身の判断でサイズを選び直して</b>からコピーしてください。
         </div>
         <div id="dynamic-catalog"></div>
         <div class="data-viewer">
-            <div class="data-header" onclick="toggleTable()"><span>📄 資料：メーカー提供サイズ表を照合する</span><span id="arrow">▼ 表示</span></div>
+            <div class="data-header" onclick="toggleTable()"><span>📄 資料：すべての製品サイズ表を照合する</span><span id="arrow">▼ 表示</span></div>
             <div id="table-content" class="data-body"></div>
         </div>
         <button class="btn-main" style="background:#3b82f6; margin-top:20px;" onclick="copyResult()">申請内容をコピー</button>
@@ -109,13 +101,14 @@
     
     let isFixed = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
 
+    // 全資料統合マスター
     const MASTER = {
         jackets_blk: [{s:"S",sh:46.0},{s:"M",sh:47.5},{s:"L",sh:49.0},{s:"LL",sh:50.5},{s:"3L",sh:52.0},{s:"4L",sh:53.5},{s:"5L",sh:55.0}],
         jackets_nvy: [{s:"S",sh:49.0},{s:"M",sh:50.5},{s:"L",sh:52.0},{s:"LL",sh:53.5},{s:"3L",sh:55.0},{s:"4L",sh:56.5},{s:"5L",sh:58.0}],
         shirts: [{s:"S",sh:46,b:108},{s:"M",sh:48,b:112},{s:"L",sh:50,b:120},{s:"LL",sh:52,b:128},{s:"3L",sh:54,b:136},{s:"4L",sh:55,b:140},{s:"5L",sh:56,b:144}],
-        pants_blk: ["70","73","76","79","82","85","88","91","95","100","105","110"],
-        pants_z: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94}],
-        gomu: [{s:"3S",w:72},{s:"SS",w:76},{s:"S",w:80},{s:"M",w:84},{s:"L",w:88},{s:"LL",w:92}]
+        pants_blk: ["70","73","76","79","82","85","88","91","95","100","105","110","115","120"],
+        pants_z: [{d:"W59",r:72},{d:"W61",r:74},{d:"W64",r:77},{d:"W67",r:80},{d:"W70",r:83},{d:"W73",r:86},{d:"W76",r:89},{d:"W81",r:94},{d:"W86",r:99},{d:"W91",r:104}],
+        gomu: [{s:"3S",w:72},{s:"SS",w:76},{s:"S",w:80},{s:"M",w:84},{s:"L",w:88},{s:"LL",w:92},{s:"3L",w:96}]
     };
 
     function speak(t) { speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
@@ -163,7 +156,7 @@
     }
 
     function finalize() {
-        isFixed = true; speak("完了しました。結果を確認してください。");
+        isFixed = true; speak("完了しました。資料と照合します。");
         document.getElementById('catalog-section').style.display = "block";
         document.getElementById('canvas-container').style.display = "none";
         document.getElementById('val-waist').innerText = (finalData.waist).toFixed(1) + "cm";
@@ -172,35 +165,31 @@
     }
 
     function renderCatalog() {
-        const dept = document.getElementById('deptInput').value;
+        const dept = document.getElementById('deptInput').value, container = document.getElementById('dynamic-catalog');
         const isNavy = ["背景", "装置", "舞台幕"].includes(dept), isIsho = (dept === "衣裳");
-        const container = document.getElementById('dynamic-catalog');
-        
         const jTable = isNavy ? MASTER.jackets_nvy : MASTER.jackets_blk;
         let jRec = jTable[0].s; for(let i of jTable) if((finalData.sh/640) >= i.sh - 0.5) jRec = i.s;
         let sRec = MASTER.shirts[0].s; for(let i of MASTER.shirts) if((finalData.sh/640) >= i.sh - 1) sRec = i.s;
 
-        let html = `<div class="item-card"><div class="item-name">${isNavy?'上着：製作型 (紺)':'上着：公演型 (黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
+        let html = `<div class="item-card"><div class="item-name">${isNavy?'上着：紺/製作型':'上着：黒/公演型'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         html += `<div class="item-card"><div class="item-name">長袖黒シャツ (開襟)</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
-        if (isIsho) { html += `<div class="item-card"><div class="item-name">衣裳係専用セット</div><div class="opt-wrap"><button class="opt-btn selected">総ゴムパンツ</button><button class="opt-btn">たび靴</button></div></div>`; }
+        if (isIsho) { html += `<div class="item-card"><div class="item-name">総ゴムパンツ</div><div class="opt-wrap">${MASTER.gomu.map(i=>`<button class="opt-btn" onclick="sel(this,'ゴム','${i.s}')">${i.s}</button>`).join('')}</div></div>`; }
         else { html += `<div class="item-card"><div class="item-name">ズボン</div><div class="opt-wrap">${(isNavy?MASTER.pants_z.map(i=>i.d):MASTER.pants_blk.map(i=>"W"+i)).map(v=>`<button class="opt-btn" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`; }
-        
         container.innerHTML = html;
-        document.getElementById('mainBtn').disabled = false;
-        document.getElementById('mainBtn').innerText = "再計測する";
+        document.getElementById('mainBtn').disabled = false; document.getElementById('mainBtn').innerText = "再計測する";
     }
 
     function buildReferenceTable() {
-        const content = document.getElementById('table-content');
-        const dept = document.getElementById('deptInput').value;
-        const isNavy = ["背景", "装置", "舞台幕"].includes(dept);
-        const jTable = isNavy ? MASTER.jackets_nvy : MASTER.jackets_blk;
+        const content = document.getElementById('table-content'), dept = document.getElementById('deptInput').value, isNavy = ["背景", "装置", "舞台幕"].includes(dept);
+        const curSH = finalData.sh/640, curW = finalData.waist;
         
-        let sRows = MASTER.shirts.map(i => `<tr class="${(finalData.sh/640 >= i.sh-1 && finalData.sh/640 < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td></tr>`).join('');
-        let jRows = jTable.map(i => `<tr class="${(finalData.sh/640 >= i.sh-0.5 && finalData.sh/640 < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td></tr>`).join('');
+        let sRows = MASTER.shirts.map(i => `<tr class="${(curSH >= i.sh-1 && curSH < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td></tr>`).join('');
+        let jRows = (isNavy?MASTER.jackets_nvy:MASTER.jackets_blk).map(i => `<tr class="${(curSH >= i.sh-0.5 && curSH < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td></tr>`).join('');
+        let pRows = isNavy ? MASTER.pants_z.map(i => `<tr class="${(curW >= i.r-2 && curW < i.r+3)?'row-highlight':''}"><td>${i.d}</td><td>${i.r}cm</td></tr>`).join('') : MASTER.pants_blk.map(i => `<tr class="${(curW >= i-2 && curW < parseInt(i)+3)?'row-highlight':''}"><td>W${i}</td><td>${i}cm</td></tr>`).join('');
 
-        content.innerHTML = `<p><b>■ シャツ表</b></p><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th></tr>${sRows}</table>` +
-                           `<p><b>■ 上着表 (${isNavy?'紺':'黒'})</b></p><table><tr><th>サイズ</th><th>肩巾</th></tr>${jRows}</table>`;
+        content.innerHTML = `<p><b>■ 長袖シャツ表</b></p><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th></tr>${sRows}</table>` +
+                           `<p><b>■ 上着表 (${isNavy?'紺':'黒'})</b></p><table><tr><th>サイズ</th><th>肩巾</th></tr>${jRows}</table>` +
+                           `<p><b>■ ズボン表 (${isNavy?'製作型実寸':'公演型'})</b></p><table><tr><th>表示</th><th>実寸目安</th></tr>${pRows}</table>`;
     }
 
     function toggleTable() { const b = document.getElementById('table-content'), a = document.getElementById('arrow'); b.style.display = (b.style.display==="block")?"none":"block"; a.innerText = (b.style.display==="block")?"▲ 閉じる":"▼ 表示"; }
