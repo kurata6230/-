@@ -3,32 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆全部署DX最終版</title>
+    <title>宝塚舞台：精密3D採寸＆製品別DXポータル【最終版】</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; border-radius: 16px; padding: 15px; max-width: 550px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
+        .card { background: white; border-radius: 16px; padding: 15px; max-width: 500px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         
-        /* 入力エリア */
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; }
+        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
 
-        /* カメラエリア */
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
         video { display: none; }
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: none; z-index: 100; }
         
-        /* ガイド表示 */
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); z-index: 105; }
-        .guide-inner { background: rgba(0,0,0,0.8); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
-        .guide-inner b { color: #facc15; font-size: 1.1rem; }
+        .guide-inner { background: rgba(0,0,0,0.85); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
 
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
@@ -50,10 +46,13 @@
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "推奨"; position: absolute; top: -10px; right: -2px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
 
-        .order-summary { background: #f1f5f9; border: 2px solid #3b82f6; border-radius: 12px; padding: 12px; margin: 15px 0; }
-        .order-summary h3 { font-size: 0.8rem; margin: 0 0 8px 0; border-bottom: 1px solid #cbd5e1; }
-        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.75rem; }
-        .summary-list li { margin-bottom: 4px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; }
+        /* 申請確認リスト */
+        .order-summary { background: #f1f5f9; border: 2px solid #2563eb; border-radius: 12px; padding: 12px; margin: 15px 0; }
+        .order-summary h3 { font-size: 0.85rem; margin: 0 0 10px 0; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; color: #1e293b; }
+        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.75rem; color: #334155; }
+        .summary-list li { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
+        .summary-list b { color: #2563eb; }
+        .summary-section-title { font-weight: bold; color: #64748b; font-size: 0.65rem; margin-top: 8px; border-left: 3px solid #64748b; padding-left: 5px; }
 
         .data-viewer { margin-top: 10px; border: 2px solid #3b82f6; border-radius: 8px; overflow: hidden; }
         .data-header { background: #3b82f6; color: white; padding: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
@@ -68,7 +67,7 @@
 <body>
 
 <div class="card">
-    <h1>宝塚舞台：精密3D採寸＆全スペック照合DX</h1>
+    <h1>宝塚舞台：精密採寸＆全部署DX最終版</h1>
     
     <div class="input-row">
         <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
@@ -107,12 +106,21 @@
     <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="restartMeasurement()">再計測する</button>
 
     <div id="catalog-section">
-        <div class="user-notice">数値は暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
+        <div class="user-notice">表示数値は暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
+        
         <div id="dynamic-catalog"></div>
 
+        <!-- 【復活】本人情報・実測値・選択サイズの一覧 -->
         <div class="order-summary" id="orderSummaryBox">
-            <h3>【申請サイズ確認リスト】</h3>
-            <ul class="summary-list" id="summaryList"><li>サイズを選択してください...</li></ul>
+            <h3>【申請確認リスト】</h3>
+            <div class="summary-section-title">■ 本人基本情報</div>
+            <ul class="summary-list" id="infoSummary"></ul>
+            
+            <div class="summary-section-title">■ AI精密実測値</div>
+            <ul class="summary-list" id="aiSummary"></ul>
+            
+            <div class="summary-section-title">■ 選択したサイズ</div>
+            <ul class="summary-list" id="selectionSummary"><li>サイズを選択してください...</li></ul>
         </div>
 
         <div class="data-viewer">
@@ -128,36 +136,15 @@
     const videoElement = document.getElementById('input_video');
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
-    
     let isFixed = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
 
     const MASTER = {
-        jackets_blk: [
-            {s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},
-            {s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}
-        ],
-        jackets_nvy: [
-            {s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},
-            {s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}
-        ],
-        shirts: [
-            {s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},
-            {s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}
-        ],
-        pants_blk: [
-            {d:"W70",r:70,h:86,u:26,w:23},{d:"W73",r:73,h:92,u:26,w:23},{d:"W76",r:76,h:92,u:27,w:25},
-            {d:"W79",r:79,h:96,u:27,w:25},{d:"W82",r:82,h:96,u:27,w:25},{d:"W85",r:85,h:98,u:27,w:27},
-            {d:"W88",r:88,h:100,u:28,w:27},{d:"W91",r:91,h:108,u:29,w:27},{d:"W95",r:95,h:108,u:29,w:27},{d:"W100",r:100,h:108,u:31,w:30}
-        ],
-        pants_z: [
-            {d:"W59",r:72,h:90,w:30.5},{d:"W61",r:74,h:92,w:31},{d:"W64",r:77,h:95,w:32},
-            {d:"W67",r:80,h:98,w:33},{d:"W70",r:83,h:101,w:34},{d:"W73",r:86,h:104,w:35},
-            {d:"W76",r:89,h:107,w:36},{d:"W81",r:94,h:112,w:37},{d:"W86",r:99,h:117,w:38}
-        ],
-        gomu: [
-            {s:"3S",w:"68-77",h:91,u:23,wa:23},{s:"SS",w:"72-81",h:95,u:24,wa:24},{s:"S",w:"76-85",h:99,u:24,wa:24},
-            {s:"M",w:"79-88",h:102,u:25,wa:25},{s:"L",w:"82-91",h:105,u:26,wa:26},{s:"LL",w:"85-94",h:108,u:26,wa:27}
-        ]
+        jackets_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
+        jackets_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
+        shirts: [{s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},{s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}],
+        pants_blk: [{d:"W70",r:70,h:86,u:26,w:23},{d:"W73",r:73,h:92,u:26,w:23},{d:"W76",r:76,h:92,u:27,w:25},{d:"W79",r:79,h:96,u:27,w:25},{d:"W82",r:82,h:96,u:27,w:25},{d:"W85",r:85,h:98,u:27,w:27},{d:"W88",r:88,h:100,u:28,w:27},{d:"W91",r:91,h:108,u:29,w:27},{d:"W95",r:95,h:108,u:29,w:27},{d:"W100",r:100,h:108,u:31,w:30}],
+        pants_z: [{d:"W59",r:72,h:90,w:30.5},{d:"W61",r:74,h:92,w:31},{d:"W64",r:77,h:95,w:32},{d:"W67",r:80,h:98,w:33},{d:"W70",r:83,h:101,w:34},{d:"W73",r:86,h:104,w:35},{d:"W76",r:89,h:107,w:36},{d:"W81",r:94,h:112,w:37},{d:"W86",r:99,h:117,w:38}],
+        gomu: [{s:"3S",w:"68-77",h:91,u:23,wa:23},{s:"SS",w:"72-81",h:95,u:24,wa:24},{s:"S",w:"76-85",h:99,u:24,wa:24},{s:"M",w:"79-88",h:102,u:25,wa:25},{s:"L",w:"82-91",h:105,u:26,wa:26},{s:"LL",w:"85-94",h:108,u:26,wa:27}]
     };
 
     function speak(t) { speechSynthesis.speak(new SpeechSynthesisUtterance(t)); }
@@ -209,7 +196,7 @@
         document.getElementById('restartBtn').style.display = "block";
         document.getElementById('val-waist').innerText = (finalData.waist).toFixed(1) + "cm";
         document.querySelectorAll('.result-item').forEach(el => el.classList.add('fixed'));
-        renderCatalog(); buildReferenceTable();
+        renderCatalog(); buildReferenceTable(); updateSummary();
     }
 
     function restartMeasurement() {
@@ -220,20 +207,22 @@
         document.getElementById('mainBtn').disabled = false;
         document.getElementById('restartBtn').style.display = "none";
         document.querySelectorAll('.result-item').forEach(el => el.classList.remove('fixed'));
-        document.getElementById('summaryList').innerHTML = "<li>選択してください...</li>";
+        speak("リセットしました。");
     }
 
     function renderCatalog() {
         const dept = document.getElementById('deptInput').value, container = document.getElementById('dynamic-catalog');
-        const isNavy = ["背景", "装置", "舞台幕"].includes(dept), isIsho = (dept === "衣裳");
+        const isNavy = ["背景", "装置", "舞台幕"].includes(dept); // 大道具は黒（公演型）
+        const isIsho = (dept === "衣裳");
         const jTable = isNavy ? MASTER.jackets_nvy : MASTER.jackets_blk;
         let jRec = jTable[0].s; for(let i of jTable) if((finalData.sh/640) >= i.sh - 0.5) jRec = i.s;
         let sRec = MASTER.shirts[0].s; for(let i of MASTER.shirts) if((finalData.sh/640) >= i.sh - 1) sRec = i.s;
 
         let html = `<div class="item-card"><div class="item-name">上着：${isNavy?'製作(紺)':'公演(黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
-        html += `<div class="item-card"><div class="item-name">長袖黒シャツ (開襟)</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
+        html += `<div class="item-card"><div class="item-name">長袖黒シャツ</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'長袖シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         if (isIsho) {
-            html += `<div class="item-card"><div class="item-name">衣裳セット (総ゴムP/たび靴)</div><div class="opt-wrap">${MASTER.gomu.map(i=>`<button class="opt-btn" onclick="sel(this,'ゴムP','${i.s}')">${i.s}</button>`).join('')}<button class="opt-btn" onclick="sel(this,'たび靴','${document.getElementById('shoeInput').value}')">たび靴</button></div></div>`;
+            html += `<div class="item-card"><div class="item-name">総ゴムパンツ</div><div class="opt-wrap">${MASTER.gomu.map(i=>`<button class="opt-btn" onclick="sel(this,'総ゴムP','${i.s}')">${i.s}</button>`).join('')}</div></div>
+                     <div class="item-card"><div class="item-name">たび靴</div><div class="opt-wrap">${["23.5","24.0","24.5","25.0","26.0"].map(v=>`<button class="opt-btn" onclick="sel(this,'たび靴','${v}')">${v}</button>`).join('')}</div></div>`;
         } else {
             let pRec = ""; if(isNavy) { for(let i of MASTER.pants_z) if(finalData.waist >= i.r - 2) pRec = i.d; } else { for(let v of MASTER.pants_blk) if(finalData.waist >= v.r - 2) pRec = v.d; }
             html += `<div class="item-card"><div class="item-name">ズボン (${isNavy?'紺':'黒'})</div><div class="opt-wrap">${(isNavy?MASTER.pants_z.map(i=>i.d):MASTER.pants_blk.map(i=>i.d)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
@@ -249,17 +238,46 @@
         let sRows = MASTER.shirts.map(i => `<tr class="${(curSH >= i.sh-1 && curSH < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('');
         let jRows = (isNavy?MASTER.jackets_nvy:MASTER.jackets_blk).map(i => `<tr class="${(curSH >= i.sh-0.5 && curSH < i.sh+1.5)?'row-highlight':''}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('');
         let pRows = isNavy ? MASTER.pants_z.map(i => `<tr class="${(curW >= i.r-2 && curW < i.r+3)?'row-highlight':''}"><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.w}</td></tr>`).join('') : MASTER.pants_blk.map(i => `<tr class="${(curW >= i.r-2 && curW < i.r+3)?'row-highlight':''}"><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.u}</td><td>${i.w}</td></tr>`).join('');
-        content.innerHTML = `<div class="table-wrapper"><p><b>■ シャツ詳細</b></p><table><tr><th>サイズ</th><th>肩巾</th><th>バスト</th><th>袖丈</th><th>着丈</th></tr>${sRows}</table></div><div class="table-wrapper"><p><b>■ 上着詳細</b></p><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${jRows}</table></div><div class="table-wrapper"><p><b>■ ズボン詳細</b></p><table><tr><th>サイズ</th><th>W実寸</th><th>ヒップ</th>${!isNavy?'<th>股上</th>':''}<th>ワタリ</th></tr>${pRows}</table></div>`;
+        content.innerHTML = `<div class="table-wrapper"><p><b>■ シャツ表</b></p><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th><th>袖丈</th><th>着丈</th></tr>${sRows}</table></div><div class="table-wrapper"><p><b>■ 上着表</b></p><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${jRows}</table></div><div class="table-wrapper"><p><b>■ ズボン表</b></p><table><tr><th>サイズ</th><th>W実寸</th><th>ヒップ</th>${!isNavy?'<th>股上</th>':''}<th>ワタリ</th></tr>${pRows}</table></div>`;
     }
 
     function toggleTable() { const b = document.getElementById('table-content'), a = document.getElementById('arrow'); b.style.display = (b.style.display==="block")?"none":"block"; a.innerText = (b.style.display==="block")?"▲ 閉じる":"▼ 表示"; }
-    function sel(btn, cat, val) { btn.parentElement.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selections[cat]=val; updateSummary(); }
-    function updateSummary() { const list = document.getElementById('summaryList'); list.innerHTML = ""; for (let k in selections) list.innerHTML += `<li>${k}: <b>${selections[k]}</b></li>`; }
-    function copyResult() {
-        let text = `【宝塚舞台 報告】氏名: ${document.getElementById('nameInput').value}\n----------------\n■ 選択サイズ\n`;
-        for (let k in selections) text += `・${k}: ${selections[k]}\n`;
-        navigator.clipboard.writeText(text).then(() => alert("申請内容をコピーしました。"));
+    
+    function sel(btn, cat, val) { 
+        btn.parentElement.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected')); 
+        btn.classList.add('selected'); selections[cat]=val; 
+        updateSummary(); 
     }
+
+    function updateSummary() {
+        // 本人基本情報
+        document.getElementById('infoSummary').innerHTML = `
+            <li>氏名: <b>${document.getElementById('nameInput').value || '--'}</b></li>
+            <li>部署: <b>${document.getElementById('deptInput').value}</b></li>
+            <li>性別: <b>${document.getElementById('genderInput').value}</b></li>
+            <li>身長: <b>${document.getElementById('heightInput').value} cm</b></li>
+            <li>靴サイズ: <b>${document.getElementById('shoeInput').value} cm</b></li>
+            <li>利き手: <b>${document.getElementById('handInput').value}</b></li>
+        `;
+        // AI実測値
+        document.getElementById('aiSummary').innerHTML = `
+            <li>肩幅: <b>${(finalData.sh/640).toFixed(1)} cm</b></li>
+            <li>ウエスト: <b>${finalData.waist.toFixed(1)} cm</b></li>
+            <li>股下: <b>${(finalData.ins/480).toFixed(1)} cm</b></li>
+        `;
+        // 選択サイズ
+        const sList = document.getElementById('selectionSummary');
+        sList.innerHTML = "";
+        if(Object.keys(selections).length === 0) sList.innerHTML = "<li>サイズを選択してください...</li>";
+        for (let k in selections) sList.innerHTML += `<li>${k}: <b>${selections[k]}</b></li>`;
+    }
+
+    function copyResult() {
+        let text = `【宝塚舞台 採寸報告】\n氏名: ${document.getElementById('nameInput').value}\n部署: ${document.getElementById('deptInput').value}\n身長: ${document.getElementById('heightInput').value}cm / 靴: ${document.getElementById('shoeInput').value}cm\n----------------\n■ AI精密実測値\n肩幅: ${(finalData.sh/640).toFixed(1)}cm / ウエスト: ${finalData.waist.toFixed(1)}cm / 股下: ${(finalData.ins/480).toFixed(1)}cm\n----------------\n■ 選択サイズ\n`;
+        for (let k in selections) text += `・${k}: ${selections[k]}\n`;
+        navigator.clipboard.writeText(text).then(() => alert("申請内容をすべてコピーしました！メール等に貼り付けてください。"));
+    }
+
     const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
     pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.6 });
     pose.onResults(onResults);
