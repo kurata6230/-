@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆全資料照合DX【真・最終完成版】</title>
+    <title>宝塚舞台：精密3D採寸＆全資料網羅DX【最終完成版】</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -11,25 +11,31 @@
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; border-radius: 16px; padding: 15px; max-width: 600px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+        
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; }
+        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
+
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
         video { display: none; }
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: none; z-index: 100; }
+        
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); z-index: 105; }
         .guide-inner { background: rgba(0,0,0,0.85); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
+
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
         .result-item.fixed { border-color: #10b981; background: #f0fdf4; }
         .res-val { font-size: 0.8rem; font-weight: bold; color: #1e293b; display: block; }
         .res-label { font-size: 0.5rem; color: #64748b; font-weight: bold; }
+
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
         .btn-start { background: #10b981; color: white; }
         .btn-restart { background: #64748b !important; color: white; box-shadow: 0 4px 0 #475569; margin-top: 10px; }
+
         #catalog-section { display: none; width: 100%; margin-top: 15px; }
         .user-notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.65rem; color: #9a3412; line-height: 1.4; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
@@ -39,12 +45,15 @@
         .selected { background: #3b82f6 !important; color: white; border-color: #3b82f6; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "推奨"; position: absolute; top: -10px; right: -2px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
+
+        /* 申請確認リスト */
         .order-summary { background: #f1f5f9; border: 2px solid #2563eb; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: left; }
         .order-summary h3 { font-size: 0.85rem; margin: 0 0 10px 0; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; color: #1e293b; }
         .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.72rem; color: #334155; }
         .summary-list li { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
         .summary-list b { color: #2563eb; }
         .sum-sec-title { font-weight: bold; color: #64748b; font-size: 0.65rem; margin: 10px 0 5px 0; border-left: 3px solid #64748b; padding-left: 5px; }
+
         .data-viewer { margin-top: 10px; border: 2px solid #3b82f6; border-radius: 8px; overflow: hidden; }
         .data-header { background: #3b82f6; color: white; padding: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
         .data-body { display: none; padding: 10px; background: #fff; max-height: 600px; overflow-y: auto; }
@@ -97,7 +106,7 @@
     <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="location.reload()">再計測する</button>
 
     <div id="catalog-section">
-        <div class="user-notice">数値は暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
+        <div class="user-notice">数値はAIの暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
         
         <div id="dynamic-catalog"></div>
 
@@ -105,7 +114,7 @@
             <h3>【申請サイズ最終確認】</h3>
             <div class="sum-sec-title">■ 本人基本情報</div><ul class="summary-list" id="sumInfo"></ul>
             <div class="sum-sec-title">■ AI精密実測値</div><ul class="summary-list" id="sumAI"></ul>
-            <div class="sum-sec-title">■ 選択したサイズ</div><ul class="summary-list" id="sumSel"><li>サイズを選択してください...</li></ul>
+            <div class="sum-sec-title">■ 選択したサイズ</div><ul class="summary-list" id="sumSel"><li>未選択</li></ul>
         </div>
 
         <div class="data-viewer">
@@ -125,13 +134,14 @@
     let isFixed = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
 
     const MASTER = {
-        jackets_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
-        jackets_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
+        j_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
+        j_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
         shirts: [{s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},{s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}],
         p_1603: [{d:"70",w:70,h:86,u:26,wa:23},{d:"73",w:73,h:92,u:26,wa:23},{d:"76",w:76,h:92,u:27,wa:25},{d:"79",w:79,h:96,u:27,wa:25},{d:"82",w:82,h:96,u:27,wa:25},{d:"85",w:85,h:98,u:27,wa:27},{d:"88",w:88,h:100,u:28,wa:27},{d:"91",w:91,h:108,u:29,wa:27},{d:"95",w:95,h:108,u:29,wa:27},{d:"100",w:100,h:108,u:31,wa:30},{d:"110",w:110,h:118,u:31,wa:32},{d:"120",w:120,h:126,u:33,wa:34}],
         p_1725: [{d:"7",w:61,h:90,u:23,wa:21},{d:"9",w:64,h:93,u:24,wa:22},{d:"11",w:67,h:96,u:25,wa:23},{d:"13",w:70,h:99},{d:"19",w:82,h:111}],
         p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23},{d:"SS",w:"72-81",h:95,u:24.7,wa:24},{d:"S",w:"76-85",h:99,u:24,wa:24},{d:"M",w:"79-88",h:102,u:25,wa:25},{d:"L",w:"82-91",h:105,u:26,wa:26},{d:"6L",w:"105-114",h:128,u:29,wa:31}],
-        p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22},{d:"SS",w:73,h:92,u:23,wa:23},{d:"S",w:76,h:95,u:23,wa:23},{d:"M",w:80,h:98,u:25,wa:24},{d:"L",w:84,h:99,u:25,wa:24},{d:"LL",w:90,h:103,u:25,wa:26},{d:"3L",w:97,h:112,u:28,wa:27},{d:"4L",w:105,h:120,u:28,wa:28},{d:"5L",w:113,h:126,u:29,wa:30}],
+        p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22},{d:"M",w:80,h:98,u:25,wa:24},{d:"5L",w:113,h:126,u:29,wa:30}],
+        p_1483: [{d:"70",w:70,h:86,u:26,wa:23},{d:"76",w:76,h:92,u:27,wa:25},{d:"120",w:120,h:126,u:33,wa:34}],
         p_zdragon: [{d:"59",r:72,h:90,wa:30.5},{d:"67",r:80,h:98,wa:33.0},{d:"76",r:89,h:107,wa:36.0},{d:"101",r:114,h:132,wa:42.5}]
     };
 
@@ -169,9 +179,9 @@
 
     async function runSequence() {
         document.getElementById('mainBtn').disabled = true; isFixed = false;
-        speak("正面を計測。姿勢を良くして。"); await countdown(10, "正面");
+        speak("正面を計測。姿勢を良く。"); await countdown(10, "正面");
         finalData = JSON.parse(JSON.stringify(liveData));
-        speak("次は右を向いて。厚みを計測。"); await countdown(10, "側面");
+        speak("次は右に向いて。厚みを計測。"); await countdown(10, "側面");
         const a = (finalData.w_w/640)/2, b = (liveData.w_d/640)/2, hv = Math.pow(a-b,2)/Math.pow(a+b,2);
         finalData.waist = Math.PI * (a+b) * (1 + (3*hv)/(10 + Math.sqrt(4-3*hv))) * 640;
         finalize();
@@ -196,14 +206,14 @@
         let sRec = MASTER.shirts[0].s; for(let i of MASTER.shirts) if((finalData.sh/640) >= i.sh - 1) sRec = i.s;
 
         let html = `<div class="item-card"><div class="item-name">上着推奨：${isNavyType?'製作(紺)':'公演(黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
-        html += `<div class="item-card"><div class="item-name">長袖黒シャツ推奨</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
+        html += `<div class="item-card"><div class="item-name">長袖シャツ推奨</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         
         if (dept === "東京衣裳") html += `<div class="item-card"><div class="item-name">東京衣裳：総ゴムP (Selery)</div><div class="opt-wrap">${MASTER.p_selery.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
         else if (dept === "宝塚衣裳") html += `<div class="item-card"><div class="item-name">宝塚衣裳：ストレッチP (AITOZ)</div><div class="opt-wrap">${MASTER.p_aitoz.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
         else {
             const isSmall = finalData.waist <= 70;
             if(isSmall && !isNavyType) {
-                html += `<div class="item-card"><div class="item-name">XEBEC 1725 黒ズボン (スリム)</div><div class="opt-wrap">${MASTER.p_1725.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}号')">${i.d}号</button>`).join('')}</div></div>`;
+                html += `<div class="item-card"><div class="item-name">XEBEC 1725 黒ズボン (W70以下推奨)</div><div class="opt-wrap">${MASTER.p_1725.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}号')">${i.d}号</button>`).join('')}</div></div>`;
             } else {
                 let pRec = ""; if(isNavyType) { for(let i of MASTER.p_zdragon) if(finalData.waist >= i.r - 2) pRec = i.d; } else { for(let v of MASTER.p_1603) if(finalData.waist >= v.w - 2) pRec = "W"+v.d; }
                 html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div><div class="opt-wrap">${(isNavyType?MASTER.p_zdragon.map(i=>i.d):MASTER.p_1603.map(i=>"W"+i.d)).map(v=>`<button class="opt-btn ${v.includes(pRec)?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
@@ -233,7 +243,7 @@
             h += `<div class="table-wrapper"><p class="table-title">■ 黒ズボン (${curW<=70?'1725スリム':'1603標準'})</p><table><tr><th>サイズ</th><th>W実寸</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${pantsData.map(i=>`<tr class="${rowH(curW,i.w)}"><td>${i.d}${curW<=70?'号':''}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
         }
         
-        const jData = isNavyType ? MASTER.j_nvy : MASTER.j_blk;
+        const jData = isNavyType ? MASTER.j_1480 : MASTER.j_1600;
         h += `<div class="table-wrapper"><p class="table-title">■ ${isNavyType?'紺上着 (1480)':'黒上着 (1600)'}</p><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${jData.map(i=>`<tr class="${rowH(curSH,i.sh)}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table></div>`;
         content.innerHTML = h;
     }
@@ -249,7 +259,7 @@
     }
 
     function copyResult() {
-        let t = `【宝塚舞台 報告】氏名:${document.getElementById('nameInput').value} 実測:[肩:${(finalData.sh/640).toFixed(1)}, 腰:${finalData.waist.toFixed(1)}]\n----------------\n`;
+        let t = `【宝塚舞台 報告】氏名:${document.getElementById('nameInput').value} 実測:[肩:${(finalData.sh/640).toFixed(1)}, 腰:${finalData.waist.toFixed(1)}, 股:${(finalData.ins/480).toFixed(1)}]\n----------------\n`;
         for (let k in selections) t += `・${k}: ${selections[k]}\n`;
         navigator.clipboard.writeText(t).then(() => alert("コピーしました！"));
     }
