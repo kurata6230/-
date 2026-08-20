@@ -3,70 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆全資料統合ポータル</title>
+    <title>宝塚舞台：精密採寸＆全資料照合DX【最終確定版】</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: sans-serif; background: #f0f4f8; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; border-radius: 16px; padding: 15px; max-width: 600px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; position: relative; }
+        .card { background: white; border-radius: 16px; padding: 15px; max-width: 600px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         
-        /* 入力エリア */
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
-        label { font-size: 0.55rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
+        label { font-size: 0.55rem; font-weight: bold; color: #64748b; }
         input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
 
-        /* カメラ・タイマー・ガイド */
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3 / 4; margin-bottom: 12px; border: 2px solid #3b82f6; }
         canvas { width: 100%; height: 100%; object-fit: cover; }
         video { display: none; }
         .flip-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
         .timer-overlay { position: absolute; top: 15px; left: 15px; background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: none; z-index: 100; }
+        
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); z-index: 105; }
         .guide-inner { background: rgba(0,0,0,0.85); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
 
-        /* 計測結果 */
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
-        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
+        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
         .result-item.fixed { border-color: #10b981; background: #f0fdf4; }
         .res-val { font-size: 0.8rem; font-weight: bold; color: #1e293b; display: block; }
-        .res-label { font-size: 0.5rem; color: #64748b; font-weight: bold; }
+        .res-label { font-size: 0.5rem; color: #64748b; }
 
-        /* ボタン */
-        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
         .btn-start { background: #10b981; color: white; }
-        .btn-restart { background: #64748b !important; color: white; box-shadow: 0 4px 0 #475569; margin-top: 10px; font-size: 0.8rem; padding: 10px; }
+        .btn-restart { background: #64748b !important; color: white; box-shadow: 0 4px 0 #475569; margin-top: 10px; }
 
-        /* カタログ */
         #catalog-section { display: none; width: 100%; margin-top: 15px; }
         .user-notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.65rem; color: #9a3412; line-height: 1.4; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
-        .item-name { font-weight: bold; font-size: 0.72rem; border-left: 4px solid #3b82f6; padding-left: 8px; margin-bottom: 8px; color: #1e293b; }
+        .item-name { font-weight: bold; font-size: 0.75rem; border-left: 4px solid #3b82f6; padding-left: 8px; margin-bottom: 8px; }
         .opt-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
-        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.62rem; cursor: pointer; min-width: 40px; text-align: center; }
+        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.65rem; cursor: pointer; min-width: 45px; }
         .selected { background: #3b82f6 !important; color: white; border-color: #3b82f6; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "推奨"; position: absolute; top: -10px; right: -2px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
 
-        /* 確認リスト */
         .order-summary { background: #f1f5f9; border: 2px solid #2563eb; border-radius: 12px; padding: 12px; margin: 15px 0; }
-        .order-summary h3 { font-size: 0.8rem; margin: 0 0 10px 0; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
-        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.72rem; }
+        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.75rem; color: #334155; }
         .summary-list li { margin-bottom: 4px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; }
         .summary-list b { color: #2563eb; }
 
-        /* 資料ビューア（印刷用レイアウト） */
-        .data-viewer { margin-top: 15px; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
-        .data-header { background: #334155; color: white; padding: 12px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .data-body { display: none; padding: 10px; background: #fff; max-height: 600px; overflow-y: auto; }
-        .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 25px; border: 1px solid #e2e8f0; border-radius: 5px; }
-        .table-title { font-size: 0.7rem; font-weight: bold; color: #2563eb; padding: 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.52rem; white-space: nowrap; }
-        th, td { border: 1px solid #e2e8f0; padding: 6px 3px; text-align: center; }
-        th { background: #f1f5f9; position: sticky; top: 0; z-index: 5; }
-        .row-highlight { background: #fef9c3 !important; border: 2px solid #f59e0b !important; font-weight: bold; }
+        .save-btn-area { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -78,7 +63,7 @@
         <div class="input-group"><label>氏名</label><input type="text" id="nameInput" placeholder="氏名"></div>
         <div class="input-group"><label>身長(cm)</label><input type="number" id="heightInput" value="165"></div>
         <div class="input-group"><label>性別</label><select id="genderInput" onchange="resetCatalog()"><option value="男">男性</option><option value="女">女性</option></select></div>
-        <div class="input-group"><label>部署（係）</label>
+        <div class="input-group"><label>部署</label>
             <select id="deptInput" onchange="resetCatalog()">
                 <option value="大道具">大道具係</option><option value="小道具">小道具係</option>
                 <option value="宝塚衣裳">宝塚衣裳係</option><option value="東京衣裳">東京衣裳係</option>
@@ -107,10 +92,10 @@
     </div>
 
     <button id="mainBtn" class="btn-main btn-start" onclick="runSequence()">精密3D採寸スタート</button>
-    <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="restartMeasurement()">再計測する</button>
+    <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="location.reload()">数値をリセットして再計測</button>
 
     <div id="catalog-section">
-        <div class="user-notice">数値は暫定値です。<b>下の「全サイズ資料」を確認し、各アイテムのサイズを選択</b>してください。</div>
+        <div class="user-notice">表示数値は暫定値です。<b>下の「資料を確認」ボタンから全スペック表をチェックし</b>、自分で選択してください。</div>
         
         <div id="dynamic-catalog"></div>
 
@@ -119,15 +104,10 @@
             <ul class="summary-list" id="summaryList"><li>計測後に表示されます...</li></ul>
         </div>
 
-        <div class="data-viewer">
-            <div class="data-header" onclick="toggleTable()">
-                <span>📄 全製品サイズ表資料を確認する (印刷・保存可)</span>
-                <span id="arrow">▼ 表示</span>
-            </div>
-            <div id="table-content" class="data-body"></div>
+        <div class="save-btn-area">
+            <button class="btn-main" style="background:#334155;" onclick="openFullData()">📄 全サイズ表資料を一括表示・保存</button>
+            <button class="btn-main" style="background:#3b82f6;" onclick="copyResult()">申請内容をコピーして終了</button>
         </div>
-
-        <button class="btn-main" style="background:#3b82f6; margin-top:20px; box-shadow: 0 4px 0 #2563eb;" onclick="copyResult()">申請内容をコピーして終了</button>
     </div>
 </div>
 
@@ -138,16 +118,16 @@
     
     let isFixed = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
 
-    // すべての資料画像データを完全網羅
+    // 全資料統合マスター（スペック完全網羅）
     const MASTER = {
-        jackets_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
-        jackets_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
+        jackets_1600_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
+        jackets_1480_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
         shirts: [{s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},{s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}],
-        p_1603: [{d:"W70",w:70,h:86,u:26,wa:23},{d:"W73",w:73,h:92,u:26,wa:23},{d:"W76",w:76,h:92,u:27,wa:25},{d:"W79",w:79,h:96,u:27,wa:25},{d:"W82",w:82,h:96,u:27,wa:25},{d:"W85",w:85,h:98,u:27,wa:27},{d:"W88",w:88,h:100,u:28,wa:27},{d:"W91",w:91,h:108,u:29,wa:27},{d:"W95",w:95,h:108,u:29,wa:27},{d:"W100",w:100,h:108,u:31,wa:30},{d:"W105",w:105,h:116,u:31,wa:30},{d:"W110",w:110,h:118,u:31,wa:32},{d:"W115",w:115,h:120,u:32,wa:32},{d:"W120",w:120,h:126,u:33,wa:34}],
-        p_1725: [{d:"7号",w:61,h:90,u:23,wa:21},{d:"9号",w:64,h:93,u:24,wa:22},{d:"11号",w:67,h:96,u:25,wa:23},{d:"13号",w:70,h:99,u:25,wa:23},{d:"15号",w:74,h:103,u:25,wa:23},{d:"17号",w:78,h:107,u:25,wa:23},{d:"19号",w:82,h:111,u:25,wa:23}],
-        p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23},{d:"SS",w:"72-81",h:95,u:24.7,wa:24},{d:"S",w:"76-85",h:99,u:24,wa:24},{d:"M",w:"79-88",h:102,u:25,wa:25},{d:"L",w:"82-91",h:105,u:26,wa:26},{d:"LL",w:"85-94",h:108,u:26,wa:27},{d:"3L",w:"90-99",h:113,u:27,wa:29},{d:"4L",w:"95-104",h:118,u:28,wa:30},{d:"5L",w:"100-109",h:123,u:28,wa:30},{d:"6L",w:"105-114",h:128,u:29,wa:31}],
-        p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22},{d:"SS",w:73,h:92,u:23,wa:23},{d:"S",w:76,h:95,u:23,wa:23},{d:"M",w:80,h:98,u:25,wa:24},{d:"L",w:84,h:99,u:25,wa:24},{d:"LL",w:90,h:103,u:25,wa:26},{d:"3L",w:97,h:112,u:28,wa:27},{d:"4L",w:105,h:120,u:28,wa:28},{d:"5L",w:113,h:126,u:29,wa:30}],
-        p_zdragon: [{d:"W59",r:72,h:90,wa:30.5},{d:"W61",r:74,h:92,wa:31.0},{d:"W64",r:77,h:95,wa:32.0},{d:"W67",r:80,h:98,wa:33.0},{d:"W70",r:83,h:101,wa:34.0},{d:"W73",r:86,h:104,wa:35.0},{d:"W76",r:89,h:107,wa:36.0},{d:"W81",r:94,h:112,wa:37.0},{d:"W86",r:99,h:117,wa:38.0},{d:"W91",r:104,h:122,wa:39.5},{d:"W96",r:109,h:127,wa:41.0},{d:"W101",r:114,h:132,wa:42.5}]
+        p_1603: [{d:"W70",w:70,h:86,u:26,wa:23},{d:"W73",w:73,h:92,u:26,wa:23},{d:"W76",w:76,h:92,u:27,wa:25},{d:"W79",w:79,h:96,u:27,wa:25},{d:"W82",w:82,h:96,u:27,wa:25},{d:"W85",w:85,h:98,u:27,wa:27},{d:"W88",w:88,h:100,u:28,wa:27},{d:"W91",w:91,h:108,u:29,wa:27},{d:"W95",w:95,h:108,u:29,wa:27},{d:"W100",w:100,h:108,u:31,wa:30},{d:"W110",w:110,h:118,u:31,wa:32},{d:"W120",w:120,h:126,u:33,wa:34}],
+        p_1725: [{d:"7号",w:61,h:90,u:23,wa:21},{d:"9号",w:64,h:93,u:24,wa:22},{d:"11号",w:67,h:96,u:25,wa:23},{d:"19号",w:82,h:111,u:25,wa:23}],
+        p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23},{d:"SS",w:"72-81",h:95,u:24.7,wa:24},{d:"M",w:"79-88",h:102,u:25,wa:25},{d:"6L",w:"105-114",h:128,u:29,wa:31}],
+        p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22},{d:"M",w:80,h:98,u:25,wa:24},{d:"5L",w:113,h:126,u:29,wa:30}],
+        p_zdragon: [{d:"W59",r:72,h:90,wa:30.5},{d:"W67",r:80,h:98,wa:33.0},{d:"W76",r:89,h:107,wa:36.0},{d:"W101",r:114,h:132,wa:42.5}]
     };
 
     function speak(t) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'ja-JP'; u.rate = 1.1; speechSynthesis.speak(u); }
@@ -183,78 +163,77 @@
 
     async function runSequence() {
         document.getElementById('mainBtn').disabled = true; isFixed = false;
-        speak("正面を計測。姿勢を良くして10秒静止してください。"); await countdown(10, "正面");
+        speak("正面を計測。姿勢を良くして10秒静止。"); await countdown(10, "正面");
         finalData = JSON.parse(JSON.stringify(liveData));
-        speak("次は右に向いてください。厚みを計測します。"); await countdown(10, "側面");
+        speak("右に向いて。厚みを計測。"); await countdown(10, "側面");
         const a = (finalData.w_w/640)/2, b = (liveData.w_d/640)/2, hv = Math.pow(a-b,2)/Math.pow(a+b,2);
         finalData.waist = Math.PI * (a+b) * (1 + (3*hv)/(10 + Math.sqrt(4-3*hv))) * 640;
         finalize();
     }
 
     function finalize() {
-        isFixed = true; speak("完了しました。全サイズ資料を展開します。");
+        isFixed = true; speak("完了しました。全資料を確認してください。");
         document.getElementById('catalog-section').style.display = "block";
         document.getElementById('canvas-container').style.display = "none";
         document.getElementById('val-waist').innerText = (finalData.waist).toFixed(1) + "cm";
         document.querySelectorAll('.result-item').forEach(el => el.classList.add('fixed'));
-        renderCatalog(); buildReferenceTable(); updateSummary();
+        renderCatalog(); updateSummary();
         document.getElementById('restartBtn').style.display = "block";
     }
 
-    function restartMeasurement() { location.reload(); }
-
     function renderCatalog() {
         const dept = document.getElementById('deptInput').value, container = document.getElementById('dynamic-catalog'), gender = document.getElementById('genderInput').value;
-        const isNavyType = ["背景", "装置", "舞台幕"].includes(dept), isTokyo = (dept === "東京衣裳"), isTaka = (dept === "宝塚衣裳");
-        const jTable = isNavyType ? MASTER.jackets_nvy : MASTER.jackets_blk;
+        const isNavyType = ["背景", "装置", "舞台幕"].includes(dept);
+        const jTable = isNavyType ? MASTER.jackets_1480_nvy : MASTER.jackets_1600_blk;
         let jRec = jTable[0].s; for(let i of jTable) if((finalData.sh/640) >= i.sh - 0.5) jRec = i.s;
         let sRec = MASTER.shirts[0].s; for(let i of MASTER.shirts) if((finalData.sh/640) >= i.sh - 1) sRec = i.s;
 
-        let html = `<div class="item-card"><div class="item-name">上着：${isNavyType?'製作(紺)':'公演(黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
-        html += `<div class="item-card"><div class="item-name">長袖シャツ</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'長袖シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
+        let html = `<div class="item-card"><div class="item-name">上着：${isNavyType?'製作型(紺)':'公演型(黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
+        html += `<div class="item-card"><div class="item-name">長袖黒シャツ</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         
-        if (isTokyo) html += `<div class="item-card"><div class="item-name">東京衣裳：総ゴムP</div><div class="opt-wrap">${MASTER.p_selery.map(i=>`<button class="opt-btn" onclick="sel(this,'総ゴムP','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
-        else if (isTaka) html += `<div class="item-card"><div class="item-name">宝塚衣裳：ストレッチP</div><div class="opt-wrap">${MASTER.p_aitoz.map(i=>`<button class="opt-btn" onclick="sel(this,'ストレッチP','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
+        if (dept === "東京衣裳") html += `<div class="item-card"><div class="item-name">東京衣裳：総ゴムP</div><div class="opt-wrap">${MASTER.p_selery.map(i=>`<button class="opt-btn" onclick="sel(this,'総ゴムP','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
+        else if (dept === "宝塚衣裳") html += `<div class="item-card"><div class="item-name">宝塚衣裳：ストレッチP</div><div class="opt-wrap">${MASTER.p_aitoz.map(i=>`<button class="opt-btn" onclick="sel(this,'ストレッチP','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
         else {
-            let pRec = ""; if(isNavyType) { for(let i of MASTER.p_zdragon) if(finalData.waist >= i.r - 2) pRec = i.d; } else { for(let v of MASTER.p_1603) if(finalData.waist >= v.w - 2) pRec = v.d; }
-            html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div><div class="opt-wrap">${(isNavyType?MASTER.p_zdragon.map(i=>i.d):MASTER.p_1603.map(i=>i.d)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
+            let pRec = ""; if(isNavyType) { for(let i of MASTER.p_zdragon) if(finalData.waist >= i.r - 2) pRec = i.d; } else { for(let v of MASTER.p_1603) if(finalData.waist >= v.w - 2) pRec = "W"+v.d; }
+            html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div><div class="opt-wrap">${(isNavyType?MASTER.p_zdragon.map(i=>i.d):MASTER.p_1603.map(i=>"W"+i.d)).map(v=>`<button class="opt-btn ${v===pRec?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
         }
-        if (gender === "女" && !isTokyo && !isTaka) html += `<div class="item-card"><div class="item-name">女性用スリムズボン (1725)</div><div class="opt-wrap">${MASTER.p_1725.map(i=>`<button class="opt-btn" onclick="sel(this,'女性スリム','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
-        
-        html += `<div class="item-card"><div class="item-name">個別備品</div><div class="opt-wrap">${["黒半袖Tシャツ","防寒着","黒ベスト"].map(cat => `<div style='width:100%; font-size:0.6rem; margin-top:5px;'>${cat}</div>` + ["S","M","L","LL","3L","4L"].map(v => `<button class="opt-btn" onclick="sel(this,'${cat}','${v}')">${v}</button>`).join('')).join('')}</div></div>`;
+        html += `<div class="item-card"><div class="item-name">個別選択：Tシャツ / 防寒着 / ベスト</div><div class="opt-wrap">${["Tシャツ","防寒着","ベスト"].map(cat => `<div style='width:100%; font-size:0.6rem; margin-top:5px;'>${cat}</div>` + ["S","M","L","LL","3L","4L"].map(v => `<button class="opt-btn" onclick="sel(this,'${cat}','${v}')">${v}</button>`).join('')).join('')}</div></div>`;
         container.innerHTML = html;
     }
 
-    function buildReferenceTable() {
-        const content = document.getElementById('table-content'), curSH = finalData.sh/640, curW = finalData.waist;
-        let h = "";
-        const rowH = (val, target, range=1.5) => (val >= target - 1 && val < target + range) ? 'row-highlight' : '';
+    function openFullData() {
+        const curSH = (finalData.sh/640).toFixed(1), curW = finalData.waist.toFixed(1);
+        const win = window.open("", "_blank");
+        win.document.write(`<html><head><title>全製品サイズ資料</title><style>body{font-family:sans-serif;padding:20px;font-size:12px;} table{width:100%;border-collapse:collapse;margin-bottom:20px;} th,td{border:1px solid #ccc;padding:8px;text-align:center;} .highlight{background:#ff0;font-weight:bold;} .title{background:#eee;padding:10px;font-weight:bold;border-left:5px solid #333;margin:20px 0 10px 0;}</style></head><body>`);
+        win.document.write(`<h2>宝塚舞台 被服貸与用：製品スペック資料集</h2><p>計測者: ${document.getElementById('nameInput').value} | 実測肩幅: ${curSH}cm | 実測ウエスト: ${curW}cm</p>`);
+        
+        const rowH = (val, target) => (val >= target - 1 && val < target + 1.5) ? 'class="highlight"' : '';
 
-        h += `<div class="table-wrapper"><p class="table-title">■ 長袖シャツスペック</p><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th><th>袖丈</th><th>着丈</th></tr>${MASTER.shirts.map(i=>`<tr class="${rowH(curSH,i.sh)}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ XEBEC 1603/1483 ズボン</p><table><tr><th>サイズ</th><th>実寸W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1603.map(i=>`<tr class="${rowH(curW,i.w,3)}"><td>W${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ Z-DRAGON 71516 (紺)</p><table><tr><th>表示</th><th>実測W</th><th>ヒップ</th><th>ワタリ</th></tr>${MASTER.p_zdragon.map(i=>`<tr class="${rowH(curW,i.r,3)}"><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ Selery 61460 総ゴム</p><table><tr><th>サイズ</th><th>適応W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_selery.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ AITOZ AZ50501 ストレッチ</p><table><tr><th>サイズ</th><th>W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_aitoz.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ XEBEC 1725 スリム(女)</p><table><tr><th>号数</th><th>W</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1725.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        h += `<div class="table-wrapper"><p class="table-title">■ XEBEC 1600/1480 上着</p><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${MASTER.jackets_blk.map(i=>`<tr><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table></div>`;
-        content.innerHTML = h;
+        win.document.write(`<div class="title">■ 長袖黒シャツ (開襟スペック)</div><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th><th>袖丈</th><th>着丈</th></tr>${MASTER.shirts.map(i=>`<tr ${rowH(curSH,i.sh)}><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ XEBEC 1600 黒上着 (公演型)</div><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${MASTER.jackets_1600_blk.map(i=>`<tr ${rowH(curSH,i.sh)}><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ XEBEC 1480 紺上着 (製作型)</div><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${MASTER.jackets_1480_nvy.map(i=>`<tr ${rowH(curSH,i.sh)}><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ XEBEC 1603/1483 ズボン (黒/紺)</div><table><tr><th>サイズ</th><th>W実寸</th><th>ヒップ</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1603.map(i=>`<tr ${(curW>=i.w-2 && curW<i.w+3)?'class="highlight"':''}><td>W${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ Z-DRAGON 71516 紺ズボン (製作型実寸)</div><table><tr><th>表示</th><th>実測W</th><th>ヒップ</th><th>ワタリ</th></tr>${MASTER.p_zdragon.map(i=>`<tr ${(curW>=i.r-2 && curW<i.r+3)?'class="highlight"':''}><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ Selery 61460 総ゴム (東京衣裳)</div><table><tr><th>サイズ</th><th>適応W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_selery.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`<div class="title">■ AITOZ AZ50501 ストレッチ (宝塚衣裳)</div><table><tr><th>サイズ</th><th>W</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_aitoz.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`<p>※黄色ハイライトは現在の計測値に基づいた推奨です。</p></body></html>`);
+        win.document.close();
     }
 
-    function toggleTable() { const b = document.getElementById('table-content'), a = document.getElementById('arrow'); const isShow = b.style.display === "block"; b.style.display = isShow ? "none" : "block"; a.innerText = isShow ? "▼ 表示" : "▲ 閉じる"; }
     function sel(btn, cat, val) { btn.parentElement.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selections[cat]=val; updateSummary(); }
     
     function updateSummary() {
         const list = document.getElementById('summaryList');
         let html = `<li>氏名: <b>${document.getElementById('nameInput').value || '--'}</b></li>
-                    <li>実測値: <b>肩${(finalData.sh/640).toFixed(1)} / 腰${finalData.waist.toFixed(1)} / 股${(finalData.ins/480).toFixed(1)}</b></li><hr>`;
+                    <li>肩幅実測: <b>${(finalData.sh/640).toFixed(1)}cm</b> / ウエスト実測: <b>${finalData.waist.toFixed(1)}cm</b></li><hr>`;
         for (let k in selections) html += `<li>${k}: <b>${selections[k]}</b></li>`;
         list.innerHTML = html;
     }
 
     function copyResult() {
-        let text = `【宝塚舞台 報告】氏名: ${document.getElementById('nameInput').value}\n----------------\n`;
+        let text = `【宝塚舞台 採寸報告】氏名: ${document.getElementById('nameInput').value}\n----------------\n`;
         for (let k in selections) text += `・${k}: ${selections[k]}\n`;
-        navigator.clipboard.writeText(text).then(() => alert("コピーしました。"));
+        navigator.clipboard.writeText(text).then(() => alert("申請内容をコピーしました。"));
     }
 
     const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
