@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>宝塚舞台：精密3D採寸＆全資料網羅DX【最終完成版】</title>
+    <title>宝塚舞台：精密3D採寸＆製品照合DX【最終完成版】</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -15,11 +15,11 @@
         .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.52rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; }
 
-        /* 【写真再現】大きなカメラ枠：ズームなし */
+        /* 【写真再現】カメラ：ズームをさせず全体を表示 */
         #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; margin-bottom: 12px; border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; }
-        canvas { width: 100%; height: 100%; object-fit: contain; } /* 広角を維持 */
+        canvas { width: 100%; height: 100%; object-fit: contain; } /* これによりドアップを防止 */
         video { display: none; }
         
         .flip-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; z-index: 110; cursor: pointer; }
@@ -27,18 +27,20 @@
         .guide-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: white; pointer-events: none; transform: translateY(-50%); z-index: 105; }
         .guide-inner { background: rgba(0,0,0,0.8); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
 
-        /* 【写真再現】4つの計測タイル */
+        /* 【写真再現】計測タイル */
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 15px; }
-        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
+        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
         .res-val { font-size: 0.85rem; font-weight: bold; color: #1e293b; display: block; margin-bottom: 2px; }
         .res-label { font-size: 0.5rem; color: #64748b; font-weight: bold; }
 
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #059669; }
         .btn-start { background: #10b981; color: white; }
+        .btn-stop { background: #ef4444 !important; color: white; box-shadow: 0 4px 0 #b91c1c !important; }
         .btn-restart { background: #64748b !important; color: white; box-shadow: 0 4px 0 #475569; margin-top: 10px; }
 
         /* 計測後セクション：カメラが消えたあとに表示 */
         #catalog-section { display: none; width: 100%; }
+        .user-notice { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 0.72rem; color: #9a3412; line-height: 1.4; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
         .item-name { font-weight: bold; font-size: 0.75rem; border-left: 4px solid #3b82f6; padding-left: 8px; margin-bottom: 8px; color: #1e293b; }
         .opt-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -50,7 +52,7 @@
         /* 申請確認リスト */
         .order-summary { background: #f1f5f9; border: 2px solid #2563eb; border-radius: 12px; padding: 12px; margin: 15px 0; text-align: left; }
         .order-summary h3 { font-size: 0.85rem; margin: 0 0 10px 0; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; color: #1e293b; }
-        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.72rem; color: #334155; }
+        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 0.75rem; color: #334155; }
         .summary-list li { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
         .summary-list b { color: #2563eb; }
         .sum-sec-title { font-weight: bold; color: #64748b; font-size: 0.65rem; margin: 10px 0 5px 0; border-left: 3px solid #64748b; padding-left: 5px; }
@@ -88,7 +90,7 @@
         <div class="input-group"><label>利き手</label><select id="handInput"><option value="右">右</option><option value="左">左</option></select></div>
     </div>
 
-    <!-- 撮影フェーズ：カメラとタイルを表示 -->
+    <!-- 撮影フェーズ：添付写真通りのレイアウト -->
     <div id="camera-phase">
         <div id="canvas-container">
             <button class="flip-btn" onclick="toggleCamera()">📷 カメラ切替</button>
@@ -110,9 +112,9 @@
 
     <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="location.reload()">再計測する</button>
 
-    <!-- 計測後フェーズ：カタログとリストを表示 -->
+    <!-- 計測後フェーズ：カメラを消して資料とリストを最大化 -->
     <div id="catalog-section">
-        <div class="user-notice">数値は暫定値です。<b>下の「詳細スペック表」を必ず確認し</b>、ご自身で最終選択してください。</div>
+        <div class="user-notice">数値は暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
         <div id="dynamic-catalog"></div>
 
         <div class="order-summary" id="orderSummaryBox">
@@ -123,7 +125,7 @@
         </div>
 
         <div class="data-viewer">
-            <div class="data-header" onclick="toggleTable()"><span>📄 資料：すべての製品詳細スペック表を表示</span><span id="arrow">▼ 表示</span></div>
+            <div class="data-header" onclick="toggleTable()"><span>📄 資料：部署に関連する詳細スペック表を表示</span><span id="arrow">▼ 表示</span></div>
             <div id="table-content" class="data-body"></div>
         </div>
 
@@ -136,15 +138,16 @@
     const canvasElement = document.getElementById('output_canvas');
     const canvasCtx = canvasElement.getContext('2d');
     
-    let isFixed = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
+    let isFixed = false, isPaused = false, isUserCamera = true, cameraInstance = null, finalData = {}, selections = {};
+    let timerInt = null;
 
     const MASTER = {
-        j_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
-        j_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
+        jackets_blk: [{s:"S",sh:46.0,b:107,sl:53.5,l:61},{s:"M",sh:47.5,b:111,sl:56.5,l:63},{s:"L",sh:49.0,b:115,sl:59.0,l:65},{s:"LL",sh:50.5,b:119,sl:60.5,l:67},{s:"3L",sh:52.0,b:123,sl:61.0,l:69},{s:"4L",sh:53.5,b:127,sl:61.0,l:71},{s:"5L",sh:55.0,b:131,sl:61.0,l:71}],
+        jackets_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
         shirts: [{s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},{s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}],
         p_1603: [{d:"70",w:70,h:86,u:26,wa:23},{d:"73",w:73,h:92,u:26,wa:23},{d:"76",w:76,h:92,u:27,wa:25},{d:"79",w:79,h:96,u:27,wa:25},{d:"82",w:82,h:96,u:27,wa:25},{d:"85",w:85,h:98,u:27,wa:27},{d:"88",w:88,h:100,u:28,wa:27},{d:"91",w:91,h:108,u:29,wa:27},{d:"95",w:95,h:108,u:29,wa:27},{d:"100",w:100,h:108,u:31,wa:30},{d:"110",w:110,h:118,u:31,wa:32},{d:"120",w:120,h:126,u:33,wa:34}],
-        p_1725: [{d:"7",w:61,h:90,u:23,wa:21,i:74},{d:"9",w:64,h:93,u:24,wa:22,i:74},{d:"11",w:67,h:96,u:25,wa:23,i:74},{d:"13",w:70,h:99,i:74},{d:"15",w:74,h:103,i:74},{d:"19",w:82,h:111,i:74}],
-        p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23,i:74},{d:"SS",w:"72-81",h:95,u:24.7,wa:24,i:76},{d:"S",w:"76-85",h:99,u:24,wa:24,i:76},{d:"M",w:"79-88",h:102,u:25,wa:25,i:78},{d:"L",w:"82-91",h:105,u:26,wa:26,i:80},{d:"LL",w:"85-94",h:108,u:26,wa:27,i:82},{d:"3L",w:"90-99",h:113,u:27,wa:29,i:84},{d:"4L",w:"95-104",h:118,u:28,wa:30,i:84},{d:"5L",w:"100-109",h:123,u:28,wa:30,i:84},{d:"6L",w:"105-114",h:128,u:29,wa:31,i:84}],
+        p_1725: [{d:"7",w:61,h:90,u:23,wa:21,i:74},{d:"9",w:64,h:93,u:24,wa:22,i:74},{d:"11",w:67,h:96,u:25,wa:23,i:74},{d:"13",w:70,h:99,i:74},{d:"19",w:82,h:111,i:74}],
+        p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23,i:74},{d:"SS",w:"72-81",h:95,u:24.7,wa:24,i:76},{d:"S",w:"76-85",h:99,u:24,wa:24,i:76},{d:"M",w:"79-88",h:102,u:25,wa:25,i:78},{d:"L",w:"82-91",h:105,u:26,wa:26,i:80},{d:"LL",w:"85-94",h:108,u:26,wa:27,i:82},{d:"3L",w:"90-99",h:113,u:27,wa:29,i:84},{d:"6L",w:"105-114",h:128,u:29,wa:31,i:84}],
         p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22,i:75},{d:"SS",w:73,h:92,u:23,wa:23,i:77},{d:"S",w:76,h:95,u:23,wa:23,i:77},{d:"M",w:80,h:98,u:25,wa:24,i:80},{d:"L",w:84,h:99,u:25,wa:24,i:83},{d:"LL",w:90,h:103,u:25,wa:26,i:83},{d:"3L",w:97,h:112,u:28,wa:27,i:81},{d:"4L",w:105,h:120,u:28,wa:28,i:76},{d:"5L",w:113,h:126,u:29,wa:30,i:72}],
         p_zdragon: [{d:"W59",r:72,h:90,wa:30.5},{d:"W61",r:74,h:92,wa:31.0},{d:"W64",r:77,h:95,wa:32.0},{d:"W67",r:80,h:98,wa:33.0},{d:"W70",r:83,h:101,wa:34.0},{d:"W73",r:86,h:104,wa:35.0},{d:"W76",r:89,h:107,wa:36.0},{d:"W81",r:94,h:112,wa:37.0},{d:"W86",r:99,h:117,wa:38.0},{d:"W91",r:104,h:122,wa:39.5},{d:"W96",r:109,h:127,wa:41.0},{d:"W101",r:114,h:132,wa:42.5}]
     };
@@ -153,12 +156,11 @@
 
     function onResults(results) {
         canvasCtx.save(); canvasCtx.clearRect(0,0,640,480); canvasCtx.drawImage(results.image, 0,0,640,480);
-        if (results.poseLandmarks && !isFixed) {
+        if (results.poseLandmarks && !isFixed && !isPaused) {
             drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color:'#00FF00', lineWidth:4});
             const lm = results.poseLandmarks, h = parseFloat(document.getElementById('heightInput').value);
-            const headY = lm[0].y, groundY = Math.max(lm[27].y, lm[28].y);
-            const cmPx = h / (Math.abs(groundY - headY) * 1.15);
-            liveData = { sh: Math.abs(lm[11].x-lm[12].x)*640*cmPx*1.35, w_w: Math.abs(lm[23].x-lm[24].x)*640*cmPx*1.8, ins: Math.abs(lm[23].y-groundY)*480*cmPx*1.05, w_d: Math.abs(lm[11].x-lm[12].x)*640*cmPx*4.1 };
+            const cmPx = h / (Math.abs(Math.max(lm[27].y, lm[28].y) - lm[0].y) * 1.15);
+            liveData = { sh: Math.abs(lm[11].x-lm[12].x)*640*cmPx*1.35, w_w: Math.abs(lm[23].x-lm[24].x)*640*cmPx*1.8, ins: Math.abs(lm[23].y-Math.max(lm[27].y, lm[28].y))*480*cmPx*1.05, w_d: Math.abs(lm[11].x-lm[12].x)*640*cmPx*4.1 };
             document.getElementById('val-sh').innerText = (liveData.sh/640).toFixed(1)+"cm"; 
             document.getElementById('val-waist').innerText = ((liveData.w_w*1.6)/640).toFixed(1)+"cm";
             document.getElementById('val-in').innerText = (liveData.ins/480).toFixed(1)+"cm";
@@ -172,26 +174,31 @@
     function countdown(sec, label) {
         return new Promise(resolve => {
             let c = sec; document.getElementById('timerBox').style.display = "block";
-            const tInt = setInterval(() => {
-                document.getElementById('timerBox').innerText = label + ": " + c;
-                if(c <= 3 && c > 0) speak(c.toString());
-                if(c <= 0) { clearInterval(tInt); resolve(); }
-                c--;
+            const btn = document.getElementById('mainBtn');
+            btn.innerText = "一時停止"; btn.className = "btn-main btn-stop";
+            btn.onclick = () => { isPaused = !isPaused; btn.innerText = isPaused ? "再開" : "一時停止"; };
+            timerInt = setInterval(() => {
+                if (!isPaused) {
+                    document.getElementById('timerBox').innerText = label + ": " + c;
+                    if(c <= 3 && c > 0) speak(c.toString());
+                    if(c <= 0) { clearInterval(timerInt); resolve(); }
+                    c--;
+                }
             }, 1000);
         });
     }
 
     async function runSequence() {
-        isFixed = false; speak("正面を計測。10秒姿勢を良くして。"); await countdown(10, "正面");
+        isFixed = false; speak("正面を計測。姿勢を良くして10秒静止してください。"); await countdown(10, "正面");
         finalData = JSON.parse(JSON.stringify(liveData));
-        speak("次は右を向いて。厚みを計測。"); await countdown(10, "側面");
+        speak("次は右に向いて。厚みを計測します。"); await countdown(10, "側面");
         const a = (finalData.w_w/640)/2, b = (liveData.w_d/640)/2, hv = Math.pow(a-b,2)/Math.pow(a+b,2);
         finalData.waist = Math.PI * (a+b) * (1 + (3*hv)/(10 + Math.sqrt(4-3*hv))) * 640;
         finalize();
     }
 
     function finalize() {
-        isFixed = true; speak("完了しました。申請情報を確認してください。");
+        isFixed = true; speak("完了しました。該当サイズ表を自動展開します。");
         document.getElementById('camera-phase').style.display = "none";
         document.getElementById('catalog-section').style.display = "block";
         document.getElementById('restartBtn').style.display = "block";
@@ -235,7 +242,6 @@
         else if (isTokyo) h += `<div class="table-wrapper"><p class="table-title">■ 東京：Selery 総ゴム</p><table><tr><th>サイズ</th><th>適応W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th><th>股下</th></tr>${MASTER.p_selery.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td><td>${i.i}</td></tr>`).join('')}</table></div>`;
         else if (isNavyType) {
             h += `<div class="table-wrapper"><p class="table-title">■ Z-DRAGON 紺実寸 (71516)</p><table><tr><th>表示</th><th>実測W</th><th>ヒップ</th><th>ワタリ</th></tr>${MASTER.p_zdragon.map(i=>`<tr class="${rowH(curW,i.r)}"><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-            h += `<div class="table-wrapper"><p class="table-title">■ 紺ズボン (1483)</p><table><tr><th>表示W</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1603.map(i=>`<tr><td>W${i.d}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
         } else {
             const isSmall = curW <= 71;
             const pData = isSmall ? MASTER.p_1725 : MASTER.p_1603;
