@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学校優先順位付けリスト 2026</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; color: #333; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; font-size: 0.9em; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; position: sticky; top: 0; }
+        .priority-1 { background-color: #ffebee; }
+        .priority-2 { background-color: #fff3e0; }
+        button { 
+            padding: 10px 20px; 
+            background-color: #2e7d32; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        button:hover { background-color: #1b5e20; }
+        .controls { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>舞台大道具・製作職 ターゲット校リスト（関東圏）</h1>
+    <div class="controls">
+        <button onclick="downloadExcel()">Excelファイルをダウンロード (.xlsx)</button>
+    </div>
+    
+    <table id="targetTable">
+        <thead>
+            <tr>
+                <th>優先度</th>
+                <th>学校名</th>
+                <th>所在地</th>
+                <th>種別</th>
+                <th>対象部署・コース</th>
+                <th>特徴・体力面の評価</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated by JS -->
+        </tbody>
+    </table>
+
+    <script>
+        const data = [
+            ["①必訪問", "日本工学院専門学校", "東京都", "専門", "コンサート・イベント科", "資料掲載済。機材量・実習量ともに国内最大級。現場慣れしている。"],
+            ["①必訪問", "東放学園専門学校", "東京都", "専門", "放送芸術科（美術）", "資料掲載済。テレビ美術・大道具に強く、即戦力志向が高い。"],
+            ["①必訪問", "ものつくり大学", "埼玉県", "大学", "建設学科", "【追加】全員作業着で大工・溶接を学ぶ。製作職として最高峰の体力と技術。"],
+            ["②推奨", "桐朋学園芸術短期大学", "東京都", "短大", "舞台技術コース", "【追加】公演数が多く、搬入・建込み・バラシの経験値が極めて高い。"],
+            ["②推奨", "中央工学校", "東京都", "専門", "建築・木工系学科", "【追加】建築の基礎が完璧。職人気質の学生が多く、現場作業への耐性が強い。"],
+            ["②推奨", "東京造形大学", "東京都", "大学", "デザイン（インダストリアル）", "【追加】美大の中でも「製作」へのこだわりが強い。木工・金工に慣れている。"],
+            ["②推奨", "玉川大学", "東京都", "大学", "芸術学部（大道具）", "資料掲載済。学内公演「PAFF」により、現場の規律と体力が鍛えられている。"],
+            ["③検証枠", "多摩美術大学", "東京都", "大学", "演劇舞踊（装置）", "資料掲載済。デザイン性は高い。体力面は個別の見極めが必要。"],
+            ["③検証枠", "武蔵野美術大学", "東京都", "大学", "空間演出デザイン（装置）", "資料掲載済。大型造作の経験者が多い。"],
+            ["③検証枠", "日本体育大学", "東京都", "大学", "全学部（設営・運営）", "【追加】舞台教育はないが体力・規律は最強。未経験からの製作職候補。"],
+            ["④余力", "横浜美術大学", "神奈川", "大学", "工芸・彫刻コース", "【追加】素材を扱う実技が豊富。地道な作業と重量物の扱いに慣れている。"],
+            ["④余力", "千葉工業大学", "千葉県", "大学", "創造工学部（デザイン）", "【追加】プロダクト制作を通じて工具や工作機械の扱いに習熟している。"],
+            ["④余力", "読売理工医療福祉専門学校", "東京都", "専門", "放送テレビ（美術）", "【追加】放送美術の基礎、大道具の建て込み実習がある。"],
+            ["④余力", "尚美学園大学", "埼玉県", "大学", "舞台制作コース", "資料掲載済。学内ホールでの実習を通じ、裏方作業の基礎がある。"],
+            ["④余力", "桜美林大学", "東京都", "大学", "芸術文化学群（演劇）", "資料掲載済。劇場実習が充実しており、ガッツのある学生が多い。"],
+            ["④余力", "筑波大学", "茨城県", "大学", "芸術専門学群", "【追加】非常に真面目で作業量が多い。大型作品制作に打ち込む体力がある。"],
+            ["④余力", "日本大学（理工学部）", "東京都", "大学", "建築学科", "【追加】構造理解が深い。文化祭等での巨大構造物設営の伝統がある。"],
+            ["⑤対象外", "明治大学", "東京都", "大学", "演劇学（制作・進行）", "資料掲載済。理論・進行が主で、大道具製作向きではない。"]
+        ];
+
+        function populateTable() {
+            const tbody = document.querySelector("#targetTable tbody");
+            data.forEach(rowData => {
+                const tr = document.createElement("tr");
+                rowData.forEach(cellData => {
+                    const td = document.createElement("td");
+                    td.textContent = cellData;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadExcel() {
+            const worksheet = XLSX.utils.aoa_to_sheet([
+                ["優先度", "学校名", "所在地", "種別", "対象部署・コース", "特徴・体力面の評価"],
+                ...data
+            ]);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Target_Schools");
+            XLSX.writeFile(workbook, "舞台大道具_ターゲット校リスト_2026.xlsx");
+        }
+
+        window.onload = populateTable;
+    </script>
+</body>
+</html>
