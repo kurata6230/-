@@ -12,13 +12,13 @@
         .card { background: white; border-radius: 16px; padding: 12px; width: 98%; max-width: 500px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); box-sizing: border-box; }
         h1 { font-size: 0.95rem; color: #1e293b; margin: 0 0 10px 0; text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         
-        .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .input-group { display: flex; flex-direction: column; }
         label { font-size: 0.52rem; font-weight: bold; color: #64748b; margin-bottom: 2px; }
         input, select { width: 100%; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
 
-        /* カメラ：全画面・隙間なし・ズームなしの同期設定 */
-        #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: auto; min-height: 480px; margin-bottom: 12px; border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; }
+        /* カメラ：全画面・隙間なし・同期設定 */
+        #canvas-container { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: auto; min-height: 460px; margin-bottom: 12px; border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; }
         canvas { width: 100%; height: 100%; object-fit: cover; } 
         video { display: none; }
         
@@ -28,7 +28,7 @@
         .guide-inner { background: rgba(0,0,0,0.8); display: inline-block; padding: 15px 25px; border-radius: 12px; font-size: 0.9rem; border: 2px solid #3b82f6; line-height: 1.6; font-weight: bold; }
 
         .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
-        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; transition: 0.3s; }
+        .result-item { background: #fff; padding: 10px 4px; border-radius: 8px; text-align: center; border: 2px solid #e2e8f0; }
         .res-val { font-size: 0.8rem; font-weight: bold; color: #1e293b; display: block; }
         .res-label { font-size: 0.5rem; color: #64748b; font-weight: bold; }
 
@@ -37,11 +37,11 @@
         .btn-stop { background: #ef4444 !important; color: white; box-shadow: 0 4px 0 #b91c1c !important; }
         .btn-restart { background: #64748b !important; color: white; box-shadow: 0 4px 0 #475569; margin-top: 10px; }
 
-        #catalog-section { display: none; width: 100%; margin-top: 15px; }
+        #catalog-section { display: none; width: 100%; margin-top: 10px; }
         .item-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; background: #fff; }
         .item-name { font-weight: bold; font-size: 0.72rem; border-left: 4px solid #3b82f6; padding-left: 8px; margin-bottom: 8px; color: #1e293b; }
         .opt-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
-        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 6px; border-radius: 5px; font-size: 0.62rem; cursor: pointer; min-width: 40px; text-align: center; }
+        .opt-btn { border: 1px solid #cbd5e1; background: #fff; padding: 7px 4px; border-radius: 5px; font-size: 0.62rem; cursor: pointer; min-width: 45px; text-align: center; }
         .selected { background: #3b82f6 !important; color: white; border-color: #3b82f6; }
         .ai-rec { outline: 3px solid #10b981; background: #f0fdf4 !important; position: relative; }
         .ai-rec::after { content: "推奨"; position: absolute; top: -10px; right: -2px; background: #10b981; color: white; font-size: 0.5rem; padding: 1px 4px; border-radius: 3px; z-index: 10; }
@@ -53,16 +53,6 @@
         .summary-list li { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px; }
         .summary-list b { color: #2563eb; }
         .sum-sec-title { font-weight: bold; color: #64748b; font-size: 0.65rem; margin: 10px 0 5px 0; border-left: 3px solid #64748b; padding-left: 5px; }
-
-        .data-viewer { margin-top: 10px; border: 2px solid #3b82f6; border-radius: 8px; overflow: hidden; }
-        .data-header { background: #3b82f6; color: white; padding: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
-        .data-body { display: none; padding: 10px; background: #fff; max-height: 500px; overflow-y: auto; }
-        .table-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
-        .table-title { font-size: 0.68rem; font-weight: bold; color: #2563eb; margin: 8px 0 3px 0; border-left: 4px solid #2563eb; padding-left: 6px; background: #eff6ff; padding: 5px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.48rem; white-space: nowrap; }
-        th, td { border: 1px solid #e2e8f0; padding: 5px 2px; text-align: center; }
-        th { background: #f8fafc; position: sticky; top: 0; }
-        .row-highlight { background: #fef9c3 !important; border: 2.5px solid #f59e0b !important; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,24 +99,19 @@
 
     <button id="restartBtn" class="btn-main btn-restart" style="display:none" onclick="location.reload()">再計測する</button>
 
-    <!-- 結果確認エリア -->
+    <!-- 計測後エリア -->
     <div id="catalog-section">
-        <div class="user-notice">数値は暫定値です。<b>下の「全スペック表」を確認し、各アイテムのサイズを選択</b>してください。</div>
-        <div id="dynamic-catalog"></div>
-
         <div class="order-summary" id="orderSummaryBox">
             <h3>【申請サイズ最終確認】</h3>
             <div class="sum-sec-title">■ 本人基本情報</div><ul class="summary-list" id="sumInfo"></ul>
             <div class="sum-sec-title">■ AI精密実測値</div><ul class="summary-list" id="sumAI"></ul>
-            <div class="sum-sec-title">■ 選択したサイズ</div><ul class="summary-list" id="sumSel"><li>未選択</li></ul>
+            <div class="sum-sec-title">■ 選択済みサイズ</div><ul class="summary-list" id="sumSel"><li>未選択</li></ul>
         </div>
 
-        <div class="data-viewer">
-            <div class="data-header" onclick="toggleTable()"><span>📄 資料：部署に関連する詳細スペック表を表示</span><span id="arrow">▼ 表示</span></div>
-            <div id="table-content" class="data-body"></div>
-        </div>
+        <div id="dynamic-catalog"></div>
 
-        <button class="btn-main" style="background:#3b82f6; margin-top:20px; box-shadow: 0 4px 0 #2563eb;" onclick="copyResult()">申請内容をコピーして終了</button>
+        <button class="btn-main" style="background:#334155; margin-top:20px; font-size: 0.85rem;" onclick="openPrintableCatalog()">📄 全サイズ表資料を別画面で開く (保存・印刷)</button>
+        <button class="btn-main" style="background:#3b82f6; margin-top:10px;" onclick="copyResult()">申請内容をコピーして終了</button>
     </div>
 </div>
 
@@ -142,17 +127,15 @@
         jackets_nvy: [{s:"S",sh:49.0,b:107,sl:50.0,l:61},{s:"M",sh:50.5,b:111,sl:53.0,l:63},{s:"L",sh:52.0,b:115,sl:55.5,l:65},{s:"LL",sh:53.5,b:119,sl:57.0,l:67},{s:"3L",sh:55.0,b:123,sl:57.5,l:69},{s:"4L",sh:56.5,b:127,sl:57.5,l:71},{s:"5L",sh:58.0,b:131,sl:57.5,l:71}],
         shirts: [{s:"S",sh:46,b:108,sl:55,l:66},{s:"M",sh:48,b:112,sl:56,l:71},{s:"L",sh:50,b:120,sl:57,l:73},{s:"LL",sh:52,b:128,sl:58,l:75},{s:"3L",sh:54,b:136,sl:59,l:76},{s:"4L",sh:55,b:140,sl:60,l:77},{s:"5L",sh:56,b:144,sl:60,l:82}],
         p_1603: [{d:"70",w:70,h:86,u:26,wa:23},{d:"73",w:73,h:92,u:26,wa:23},{d:"76",w:76,h:92,u:27,wa:25},{d:"79",w:79,h:96,u:27,wa:25},{d:"82",w:82,h:96,u:27,wa:25},{d:"85",w:85,h:98,u:27,wa:27},{d:"88",w:88,h:100,u:28,wa:27},{d:"91",w:91,h:108,u:29,wa:27},{d:"95",w:95,h:108,u:29,wa:27},{d:"100",w:100,h:108,u:31,wa:30},{d:"110",w:110,h:118,u:31,wa:32},{d:"120",w:120,h:126,u:33,wa:34}],
-        p_1725: [{d:"7",w:61,h:90,u:23,wa:21,i:74},{d:"9",w:64,h:93,u:24,wa:22,i:74},{d:"11",w:67,h:96,u:25,wa:23,i:74},{d:"13",w:70,h:99,i:74},{d:"15",w:74,h:103,i:74},{d:"17",w:78,h:107,i:74},{d:"19",w:82,h:111,i:74}],
         p_selery: [{d:"3S",w:"68-77",h:91,u:23,wa:23,i:74},{d:"SS",w:"72-81",h:95,u:24.7,wa:24,i:76},{d:"S",w:"76-85",h:99,u:24,wa:24,i:76},{d:"M",w:"79-88",h:102,u:25,wa:25,i:78},{d:"L",w:"82-91",h:105,u:26,wa:26,i:80},{d:"LL",w:"85-94",h:108,u:26,wa:27,i:82},{d:"3L",w:"90-99",h:113,u:27,wa:29,i:84},{d:"4L",w:"95-104",h:118,u:28,wa:30,i:84},{d:"5L",w:"100-109",h:123,u:28,wa:30,i:84},{d:"6L",w:"105-114",h:128,u:29,wa:31,i:84}],
         p_aitoz: [{d:"3S",w:70,h:89,u:22,wa:22,i:75},{d:"SS",w:73,h:92,u:23,wa:23,i:77},{d:"S",w:76,h:95,u:23,wa:23,i:77},{d:"M",w:80,h:98,u:25,wa:24,i:80},{d:"L",w:84,h:99,u:25,wa:24,i:83},{d:"LL",w:90,h:103,u:25,wa:26,i:83},{d:"3L",w:97,h:112,u:28,wa:27,i:81},{d:"4L",w:105,h:120,u:28,wa:28,i:76},{d:"5L",w:113,h:126,u:29,wa:30,i:72}],
-        p_zdragon: [{d:"W59",r:72,h:90,wa:30.5},{d:"W61",r:74,h:92,wa:31},{d:"W64",r:77,h:95,wa:32},{d:"W67",r:80,h:98,wa:33},{d:"W70",r:83,h:101,wa:34},{d:"W73",r:86,h:104,wa:35},{d:"W76",r:89,h:107,wa:36},{d:"W81",r:94,h:112,wa:37},{d:"W86",r:99,h:117,wa:38},{d:"W91",r:104,h:122,wa:39.5},{d:"W96",r:109,h:127,wa:41},{d:"W101",r:114,h:132,wa:42.5}]
+        p_zdragon: [{d:"W59",r:72,h:90,wa:30.5},{d:"W61",r:74,h:92,wa:31.0},{d:"W64",r:77,h:95,wa:32.0},{d:"W67",r:80,h:98,wa:33.0},{d:"W70",r:83,h:101,wa:34.0},{d:"W73",r:86,h:104,wa:35.0},{d:"W76",r:89,h:107,wa:36.0},{d:"W81",r:94,h:112,wa:37.0},{d:"W86",r:99,h:117,wa:38.0},{d:"W91",r:104,h:122,wa:39.5},{d:"W96",r:109,h:127,wa:41.0},{d:"W101",r:114,h:132,wa:42.5}]
     };
 
     function speak(t) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang='ja-JP'; u.rate=1.1; speechSynthesis.speak(u); }
 
     function onResults(results) {
         canvasCtx.save();
-        // 描画サイズを実際の映像に同期
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -195,23 +178,23 @@
         isFixed = false; isPaused = false;
         speak("正面を計測。10秒間、姿勢を良くしてください。"); await countdown(10, "正面");
         finalData = JSON.parse(JSON.stringify(liveData));
-        speak("次は右を向いて。厚みを計測します。"); await countdown(10, "側面");
+        speak("次は右を向いて。厚みを計測。"); await countdown(10, "側面");
         const a = (finalData.w_w/canvasElement.width)/2, b = (liveData.w_d/canvasElement.width)/2, hv = Math.pow(a-b,2)/Math.pow(a+b,2);
         finalData.waist = Math.PI * (a+b) * (1 + (3*hv)/(10 + Math.sqrt(4-3*hv))) * canvasElement.width;
         finalize();
     }
 
     function finalize() {
-        isFixed = true; speak("完了しました。該当サイズ表を自動展開します。");
+        isFixed = true; speak("完了しました。該当サイズ表とリストを確認してください。");
         document.getElementById('camera-phase').style.display = "none";
         document.getElementById('catalog-section').style.display = "block";
         document.getElementById('restartBtn').style.display = "block";
         document.getElementById('val-waist').innerText = (finalData.waist).toFixed(1) + "cm";
-        renderCatalog(); buildReferenceTable(); updateSummary();
+        renderCatalog(); updateSummary();
     }
 
     function renderCatalog() {
-        const dept = document.getElementById('deptInput').value, container = document.getElementById('dynamic-catalog'), gender = document.getElementById('genderInput').value;
+        const dept = document.getElementById('deptInput').value, container = document.getElementById('dynamic-catalog');
         const isNavyType = ["背景", "装置", "舞台幕"].includes(dept);
         const jTable = isNavyType ? MASTER.jackets_nvy : MASTER.jackets_blk;
         let jRec = jTable[0].s; for(let i of jTable) if((finalData.sh/canvasElement.width) >= i.sh - 0.5) jRec = i.s;
@@ -220,44 +203,29 @@
         let html = `<div class="item-card"><div class="item-name">上着推奨：${isNavyType?'製作(紺)':'公演(黒)'}</div><div class="opt-wrap">${jTable.map(i=>`<button class="opt-btn ${i.s===jRec?'ai-rec':''}" onclick="sel(this,'上着','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         html += `<div class="item-card"><div class="item-name">長袖シャツ推奨</div><div class="opt-wrap">${MASTER.shirts.map(i=>`<button class="opt-btn ${i.s===sRec?'ai-rec':''}" onclick="sel(this,'シャツ','${i.s}')">${i.s}</button>`).join('')}</div></div>`;
         
-        if (dept === "東京衣裳") html += `<div class="item-card"><div class="item-name">東京衣裳：総ゴムP (Selery)</div><div class="opt-wrap">${MASTER.p_selery.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
-        else if (dept === "宝塚衣裳") html += `<div class="item-card"><div class="item-name">宝塚衣裳：ストレッチP (AITOZ)</div><div class="opt-wrap">${MASTER.p_aitoz.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
+        if (dept === "東京衣裳") html += `<div class="item-card"><div class="item-name">東京衣裳：総ゴムP</div><div class="opt-wrap">${MASTER.p_selery.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
+        else if (dept === "宝塚衣裳") html += `<div class="item-card"><div class="item-name">宝塚衣裳：ストレッチP</div><div class="opt-wrap">${MASTER.p_aitoz.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}')">${i.d}</button>`).join('')}</div></div>`;
         else {
-            if(finalData.waist <= 71 && !isNavyType) html += `<div class="item-card"><div class="item-name">XEBEC 1725 黒スリム</div><div class="opt-wrap">${MASTER.p_1725.map(i=>`<button class="opt-btn" onclick="sel(this,'ズボン','${i.d}号')">${i.d}号</button>`).join('')}</div></div>`;
-            else {
-                let pRec = ""; if(isNavyType) { for(let i of MASTER.p_zdragon) if(finalData.waist >= i.r - 2) pRec = i.d; } else { for(let v of MASTER.p_1603) if(finalData.waist >= v.w - 2) pRec = "W"+v.d; }
-                html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div><div class="opt-wrap">${(isNavyType?MASTER.p_zdragon.map(i=>i.d):MASTER.p_1603.map(i=>"W"+i.d)).map(v=>`<button class="opt-btn ${v.includes(pRec)?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
-            }
+            let pRec = ""; if(isNavyType) { for(let i of MASTER.p_zdragon) if(finalData.waist >= i.r - 2) pRec = i.d; } 
+            html += `<div class="item-card"><div class="item-name">ズボン (${isNavyType?'紺':'黒'})</div><div class="opt-wrap">${(isNavyType?MASTER.p_zdragon.map(i=>i.d):["70","73","76","79","82","85","88","91","95","100"]).map(v=>`<button class="opt-btn ${v.includes(pRec)?'ai-rec':''}" onclick="sel(this,'ズボン','${v}')">${v}</button>`).join('')}</div></div>`;
         }
-        ["黒半袖Tシャツ","防寒着","黒ベスト"].forEach(cat => {
+        ["Tシャツ","防寒着","ベスト"].forEach(cat => {
             html += `<div class="item-card"><div class="item-name">${cat}</div><div class="opt-wrap">${["S","M","L","LL","3L","4L"].map(v => `<button class="opt-btn" onclick="sel(this,'${cat}','${v}')">${v}</button>`).join('')}</div></div>`;
         });
         container.innerHTML = html;
     }
 
-    function buildReferenceTable() {
-        const content = document.getElementById('table-content'), dept = document.getElementById('deptInput').value, gender = document.getElementById('genderInput').value;
-        const curSH = finalData.sh/canvasElement.width, curW = finalData.waist;
-        const isNavyType = ["背景", "装置", "舞台幕"].includes(dept), isTokyo = (dept === "東京衣裳"), isTaka = (dept === "宝塚衣裳");
-        const rowH = (val, target) => (val >= target - 1.5 && val < target + 2) ? 'row-highlight' : '';
-
-        let h = `<div class="table-wrapper"><p class="table-title">■ 長袖シャツ表</p><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th><th>袖丈</th><th>着丈</th></tr>${MASTER.shirts.map(i=>`<tr class="${rowH(curSH,i.sh)}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table></div>`;
-        if (isTaka) h += `<div class="table-wrapper"><p class="table-title">■ 宝塚：AITOZ ストレッチ</p><table><tr><th>サイズ</th><th>W</th><th>H</th><th>股上</th><th>ワタリ</th><th>股下</th></tr>${MASTER.p_aitoz.map(i=>`<tr class="${rowH(curW,i.w)}"><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td><td>${i.i}</td></tr>`).join('')}</table></div>`;
-        else if (isTokyo) h += `<div class="table-wrapper"><p class="table-title">■ 東京：Selery 総ゴム</p><table><tr><th>サイズ</th><th>適応W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th><th>股下</th></tr>${MASTER.p_selery.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td><td>${i.i}</td></tr>`).join('')}</table></div>`;
-        else if (isNavyType) {
-            h += `<div class="table-wrapper"><p class="table-title">■ Z-DRAGON 紺実寸 (71516)</p><table><tr><th>表示</th><th>実測W</th><th>ヒップ</th><th>ワタリ</th></tr>${MASTER.p_zdragon.map(i=>`<tr class="${rowH(curW,i.r)}"><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-            h += `<div class="table-wrapper"><p class="table-title">■ 紺ズボン (1483)</p><table><tr><th>表示W</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1603.map(i=>`<tr><td>W${i.d}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        } else {
-            const isSmall = curW <= 71;
-            const pData = isSmall ? MASTER.p_1725 : MASTER.p_1603;
-            h += `<div class="table-wrapper"><p class="table-title">■ 黒ズボン (${isSmall?'1725スリム':'1603標準'})</p><table><tr><th>サイズ</th><th>W実寸</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${pData.map(i=>`<tr class="${rowH(curW,i.w)}"><td>${i.d}${isSmall?'号':''}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table></div>`;
-        }
-        const jData = isNavyType ? MASTER.j_nvy : MASTER.j_blk;
-        h += `<div class="table-wrapper"><p class="table-title">■ 上着詳細表</p><table><tr><th>サイズ</th><th>肩幅</th><th>胸囲</th><th>袖丈</th><th>着丈</th></tr>${jData.map(i=>`<tr class="${rowH(curSH,i.sh)}"><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table></div>`;
-        content.innerHTML = h;
+    function openPrintableCatalog() {
+        const win = window.open("", "_blank");
+        win.document.write(`<html><head><title>宝塚舞台 全製品サイズ資料</title><style>body{font-family:sans-serif;padding:20px;font-size:12px;} table{width:100%;border-collapse:collapse;margin-bottom:25px;} th,td{border:1px solid #ccc;padding:6px;text-align:center;} h2{color:#2563eb;border-bottom:3px solid #2563eb; padding-bottom:5px;} .page-break{page-break-after:always;}</style></head><body>`);
+        win.document.write(`<h2>■ 長袖シャツ スペック (開襟)</h2><table><tr><th>サイズ</th><th>肩巾</th><th>ウエスト</th><th>袖丈</th><th>着丈</th></tr>${MASTER.shirts.map(i=>`<tr><td>${i.s}</td><td>${i.sh}</td><td>${i.b}</td><td>${i.sl}</td><td>${i.l}</td></tr>`).join('')}</table>`);
+        win.document.write(`<h2>■ 東京衣裳：Selery 61460 (総ゴム)</h2><table><tr><th>サイズ</th><th>適応W</th><th>ヒップ</th><th>股上</th><th>ワタリ</th><th>股下</th></tr>${MASTER.p_selery.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td><td>${i.i}</td></tr>`).join('')}</table>`);
+        win.document.write(`<h2>■ 宝塚衣裳：AITOZ AZ50501 (ストレッチ)</h2><table><tr><th>サイズ</th><th>W</th><th>H</th><th>股上</th><th>ワタリ</th><th>股下</th></tr>${MASTER.p_aitoz.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td><td>${i.i}</td></tr>`).join('')}</table>`);
+        win.document.write(`<h2>■ Z-DRAGON：紺 ズボン実寸対比 (71516)</h2><table><tr><th>表示W</th><th>実測W</th><th>ヒップ</th><th>ワタリ</th></tr>${MASTER.p_zdragon.map(i=>`<tr><td>${i.d}</td><td>${i.r}</td><td>${i.h}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`<h2>■ 黒ズボン 1603 スペック</h2><table><tr><th>サイズ</th><th>W実寸</th><th>H</th><th>股上</th><th>ワタリ</th></tr>${MASTER.p_1603.map(i=>`<tr><td>${i.d}</td><td>${i.w}</td><td>${i.h}</td><td>${i.u}</td><td>${i.wa}</td></tr>`).join('')}</table>`);
+        win.document.write(`</body></html>`); win.document.close();
     }
 
-    function toggleTable() { const b = document.getElementById('table-content'), a = document.getElementById('arrow'); const isShow = b.style.display === "block"; b.style.display = isShow ? "none" : "block"; a.innerText = isShow ? "▼ 表示" : "▲ 閉じる"; }
     function sel(btn, cat, val) { btn.parentElement.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selections[cat]=val; updateSummary(); }
     
     function updateSummary() {
@@ -270,7 +238,7 @@
     }
 
     function copyResult() {
-        let t = `【宝塚舞台 報告】氏名:${document.getElementById('nameInput').value} 実測:[肩:${(finalData.sh/canvasElement.width).toFixed(1)}, 腰:${finalData.waist.toFixed(1)}]\n----------------\n`;
+        let t = `【宝塚舞台 報告】氏名:${document.getElementById('nameInput').value} 部署:${document.getElementById('deptInput').value}\n実測: 肩${(finalData.sh/canvasElement.width).toFixed(1)}/腰${finalData.waist.toFixed(1)}\n----------------\n`;
         for (let k in selections) t += `・${k}: ${selections[k]}\n`;
         navigator.clipboard.writeText(t).then(() => alert("コピーしました！"));
     }
@@ -279,6 +247,7 @@
     pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.6 });
     pose.onResults(onResults);
     startCamera();
+    function resetCatalog() {}
 </script>
 </body>
 </html>
